@@ -1,0 +1,1 @@
+E:\cs-script\Samples\Sandboxing\NET4.0\Host\obj\Debug\Host.csprojResolveAssemblyReference.cache

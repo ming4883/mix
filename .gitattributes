@@ -1,0 +1,12 @@
+# default behavior
+* text=auto
+
+# scripts
+*.c text eof=lf
+*.cpp text eof=lf
+*.h text eof=lf
+*.cs text eol=crlf
+*.txt text eol=lf
+*.shader text eol=lf
+*.glsl text eof=lf
+*.hlsl text eof=lf
