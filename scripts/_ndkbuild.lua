@@ -19,6 +19,7 @@ function ndk_generate_project_android_mk(prj)
 	_p ("include $(CLEAR_VARS)")
 	_p ("")
 	_p ("LOCAL_MODULE := " .. prj.name)
+	_p ("$(warning LOCAL_PATH = $(LOCAL_PATH))")
 	
 	local mkpath = path.join (prj.solution.location, "jni", prj.name)
 	
@@ -26,7 +27,10 @@ function ndk_generate_project_android_mk(prj)
 		if (path.isabsolute (p)) then
 			return p
 		end
-		return path.getrelative (mkpath, path.getabsolute (p))
+		local absofp = path.getabsolute (path.join (prj.location, p))
+		local relofp = path.getrelative (mkpath, absofp)
+		-- print (mkpath .. "; " .. absofp .. "; " .. relofp)
+		return relofp
 	end
 	
 	_p ("")
