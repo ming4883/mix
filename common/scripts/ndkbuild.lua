@@ -1,25 +1,68 @@
 premake.ndkbuild = {}
 premake.ndkbuild.appabi = {"armeabi", "armeabi-v7a", "x86", "mips"}
+premake.ndkbuild.appabiextra = {}
 premake.ndkbuild.appstl = "gnustl_shared"
 premake.ndkbuild.appplatform = "android-12"
 
-function ndk_generate_application_mk(sln)
-	_p (string.format ("APP_ABI := %s", table.concat (premake.ndkbuild.appabi, " ")))
-	_p (string.format ("APP_PLATFORM := %s", premake.ndkbuild.appplatform))
-	_p (string.format ("APP_STL := %s", premake.ndkbuild.appstl))
-	-- _p ("APP_CPPFLAGS += -std=c++11")
+-- Assign the APP_ABI in Application.mk
+-- Example:
+-- ndkbuild_appabi {"armeabi", "armeabi-v7a", "x86", "mips"}
+--
+function ndkbuild_appabi (abi)
+	premake.ndkbuild.appabi = abi
 end
 
-function ndk_generate_solution_android_mk(sln)
+
+function ndkbuild_keyof (prj, abi, cfg)
+	return (prj .. abi) .. cfg 
+end
+
+-- Set the extra lines for an ABI of a project's Android.mk
+-- Example:
+-- ndkbuild_appabiextra ("mylib", "armeabi-v7a", "Debug", {
+--	  "	LOCAL_ARM_NEON := true"
+-- })
+--
+function ndkbuild_appabiextra (prj, abi, cfg, extra)
+	if extra ~= nil then
+		premake.ndkbuild.appabiextra[ndkbuild_keyof (prj, abi, cfg)] = extra
+		return extra
+	else
+		return premake.ndkbuild.appabiextra[ndkbuild_keyof (prj, abi, cfg)] 
+	end
+end
+
+--
+-- Example: ndkbuild_appstl "gnustl_shared"
+--
+function ndkbuild_appstl (stl)
+	premake.ndkbuild.appstl = stl
+end
+
+--
+-- Example: ndkbuild_appplatform "android-12"
+--
+function ndkbuild_appplatform (stl)
+	premake.ndkbuild.appplatform = stl
+end
+
+premake.ndkbuild.generate_application_mk = function (sln)
+	_p (string.format ("APP_PLATFORM := %s", premake.ndkbuild.appplatform))
+	_p (string.format ("APP_STL := %s", premake.ndkbuild.appstl))
+	
+	_p (string.format ("APP_ABI := %s", table.concat (premake.ndkbuild.appabi, " ")))
+end
+
+premake.ndkbuild.generate_solution_android_mk = function (sln)
 	_p ("include $(call all-subdir-makefiles)")
 end
 
-function ndk_generate_project_android_mk(prj)
+premake.ndkbuild.generate_project_android_mk = function (prj)
 	_p ("LOCAL_PATH := $(call my-dir)")
 	_p ("include $(CLEAR_VARS)")
 	_p ("")
 	_p ("LOCAL_MODULE := " .. prj.name)
-	-- _p ("$(warning LOCAL_PATH = $(LOCAL_PATH))")
+	-- _p ("$(info LOCAL_PATH = $(LOCAL_PATH))")
 	
 	local mkpath = path.join (prj.solution.location, "jni", prj.name)
 	
@@ -34,13 +77,13 @@ function ndk_generate_project_android_mk(prj)
 	end
 	
 	_p ("")
-	--_p ("$(warning Building $(APP_OPTIM) configuration)")
 	
 	for _, cfgname in ipairs (prj.solution.configurations) do
 		local cfg = premake.getconfig (prj, cfgname)
 		
-		_p (string.format ("ifeq ($(APP_OPTIM),%s)", string.lower (cfg.name)))
-		_p (string.format ("  $(warning Building with %s configuration)", cfg.name))
+		-- $(findstring pattern, in) return "" if pattern is not found
+		_p (string.format ("ifneq (, $(findstring %s, $(APP_OPTIM)))", string.lower (cfg.name)))
+		_p (string.format ("  $(info Building with %s configuration)", cfg.name))
 		
 		if #cfg.includedirs > 0 then
 			_p ("  # includedirs")
@@ -50,7 +93,7 @@ function ndk_generate_project_android_mk(prj)
 		end
 		
 		if #cfg.defines > 0 then
-			_p ("# defines")
+			_p ("  # defines")
 			for _, def in ipairs (cfg.defines) do
 				_p (string.format ("  LOCAL_CFLAGS += -D%s", def))
 			end
@@ -95,6 +138,16 @@ function ndk_generate_project_android_mk(prj)
 			end
 		end
 		
+		for _, abi in ipairs (premake.ndkbuild.appabi) do
+			local extras = ndkbuild_appabiextra (prj.name, abi, cfgname)
+			if extras ~= nil then
+				_p ("")
+				_p (string.format ("  ifeq ($(TARGET_ARCH_ABI), %s)", abi))
+				_p (string.format ("    %s", table.concat (extras, "\n    ")))
+				_p ("  endif")
+			end
+		end
+		
 		_p ("endif")
 		_p ("")
 	end
@@ -127,31 +180,31 @@ function ndk_generate_project_android_mk(prj)
 	
 end
 
-function ndk_onsolution(sln)
+premake.ndkbuild.onsolution = function (sln)
 	-- print ("android_onsolution() " .. sln.name)
 	
-	premake.generate (sln, path.join (sln.location, "jni", "Application.mk"), ndk_generate_application_mk)
-	premake.generate (sln, path.join (sln.location, "jni", "Android.mk"), ndk_generate_solution_android_mk)
+	premake.generate (sln, path.join (sln.location, "jni", "Application.mk"), premake.ndkbuild.generate_application_mk)
+	premake.generate (sln, path.join (sln.location, "jni", "Android.mk"), premake.ndkbuild.generate_solution_android_mk)
 end
 
-function ndk_onproject(prj)
+premake.ndkbuild.onproject = function (prj)
 	-- print ("android_onproject() " .. prj.name .. ":" .. prj.kind)
 	
 	local prj_location = path.join (prj.solution.location, "jni", prj.name)
 	-- print (prj_location)
 	os.mkdir (prj_location)
 	
-	premake.generate (prj, path.join (prj_location, "Android.mk"), ndk_generate_project_android_mk)
+	premake.generate (prj, path.join (prj_location, "Android.mk"), premake.ndkbuild.generate_project_android_mk)
 end
 
-function ndk_execute()
-	print ("android_execute()")
+premake.ndkbuild.onexecute = function ()
+	-- print ("android_execute()")
 end
 
 newaction ({
 	trigger		= "ndkbuild",
 	description	= "Generate the Android ndk-build files",
-	execute 	= ndk_execute,
-	onsolution 	= ndk_onsolution,
-	onproject 	= ndk_onproject,
+	execute 	= premake.ndkbuild.onexecute,
+	onsolution 	= premake.ndkbuild.onsolution,
+	onproject 	= premake.ndkbuild.onproject,
 })
