@@ -13,9 +13,9 @@ import android.view.WindowManager;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class MainActivity extends android.app.Activity {
+public class BaseActivity extends android.app.Activity {
 
-    public static String TAG = "mix";
+    public static String TAG = "MIX";
     public static void log(String s) {
         Log.i(TAG, s);
     }
@@ -99,16 +99,16 @@ public class MainActivity extends android.app.Activity {
         }
     }
 
-    public class MainView extends GLSurfaceView implements GLSurfaceView.Renderer {
+    public class BaseView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
         private int m_surfaceWidth = -1;
         private int m_surfaceHeight = -1;
 
         public NativeCode nativeCode;
 
-        public MainView(Context ctx) {
+        public BaseView(Context ctx) {
             super(ctx);
-            log("MainView()");
+            log("BaseView()");
             setEGLContextClientVersion(2);
             setRenderer(this);
             setRenderMode(RENDERMODE_CONTINUOUSLY);
@@ -133,7 +133,7 @@ public class MainActivity extends android.app.Activity {
         }
     }
 
-    MainView m_view;
+    protected BaseView m_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +144,7 @@ public class MainActivity extends android.app.Activity {
 
         loadNativeLibraries();
 
-        setContentView(m_view = new MainView(this));
+        setContentView(m_view = onCreateContentView());
     }
 
     @Override
@@ -173,23 +173,28 @@ public class MainActivity extends android.app.Activity {
         super.onResume();
         m_view.nativeCode.resume();
     }
+	
+	protected BaseView onCreateContentView() {
+		return new BaseView(this);
+	}
 
     protected String[] getLibraries() {
         return new String[] {
             "gnustl_shared",
-            "main"
+            //"main"
         };
     }
 
     public void loadNativeLibraries() {
 
-        final MainActivity self = this;
+        final BaseActivity self = this;
 
         String errorMsgBrokenLib = "";
         boolean brokenLibraries = false;
         try {
             for (String lib : getLibraries()) {
                 System.loadLibrary(lib);
+                log (lib + " is loaded");
             }
         } catch(UnsatisfiedLinkError e) {
             System.err.println(e.getMessage());
@@ -207,7 +212,7 @@ public class MainActivity extends android.app.Activity {
                     + System.getProperty("line.separator")
                     + System.getProperty("line.separator")
                     + "Error: " + errorMsgBrokenLib);
-            dlgAlert.setTitle("BGFX Error");
+            dlgAlert.setTitle("MIX Error");
             dlgAlert.setPositiveButton("Exit",
                     new DialogInterface.OnClickListener() {
                         @Override

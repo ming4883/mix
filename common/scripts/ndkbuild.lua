@@ -3,6 +3,13 @@ premake.ndkbuild.appabi = {"armeabi", "armeabi-v7a", "x86", "mips"}
 premake.ndkbuild.appabiextra = {}
 premake.ndkbuild.appstl = "gnustl_shared"
 premake.ndkbuild.appplatform = "android-12"
+premake.ndkbuild.gradle = {}
+premake.ndkbuild.gradle.manifest = "AndroidManifest.xml"
+premake.ndkbuild.gradle.java_srcdirs = {}
+premake.ndkbuild.gradle.aidl_srcdirs = {}
+premake.ndkbuild.gradle.renderscript_srcdirs = {}
+premake.ndkbuild.gradle.res_srcdirs = {}
+premake.ndkbuild.gradle.assets_srcdirs = {}
 
 -- Assign the APP_ABI in Application.mk
 -- Example:
@@ -15,6 +22,30 @@ end
 
 function ndkbuild_keyof (prj, abi, cfg)
 	return (prj .. abi) .. cfg 
+end
+
+function ndkbuild_gradle_manifest (path)
+	premake.ndkbuild.gradle.manifest = path
+end
+
+function ndkbuild_gradle_java_srcdirs (dirs)
+	premake.ndkbuild.gradle.java_srcdirs = dirs
+end
+
+function ndkbuild_gradle_aidl_srcdirs (dirs)
+	premake.ndkbuild.gradle.aidl_srcdirs = dirs
+end
+
+function ndkbuild_gradle_renderscript_srcdirs (dirs)
+	premake.ndkbuild.gradle.renderscript_srcdirs = dirs
+end
+
+function ndkbuild_gradle_res_srcdirs (dirs)
+	premake.ndkbuild.gradle.res_srcdirs = dirs
+end
+
+function ndkbuild_gradle_assets_srcdirs (dirs)
+	premake.ndkbuild.gradle.assets_srcdirs = dirs
 end
 
 -- Set the extra lines for an ABI of a project's Android.mk
@@ -57,6 +88,77 @@ premake.ndkbuild.generate_solution_android_mk = function (sln)
 	_p ("include $(call all-subdir-makefiles)")
 end
 
+premake.ndkbuild.generate_solution_build_gradle = function (sln)
+
+	local refpath = sln.location
+	
+	function processpath (p)
+		local absofp = path.getabsolute (path.join (sln.location, p))
+		local relofp = path.getrelative (refpath, absofp)
+		-- print (refpath .. "; " .. absofp .. "; " .. relofp)
+		return relofp
+	end
+	
+	function fmt_srcdirs (dirs)
+		local ret = ""
+		for _, p in ipairs (dirs) do
+			ret = ret .. string.format ("'%s', ", processpath (p))
+		end
+		return ret
+	end
+	
+	_p ("buildscript {")
+	_p ("  repositories {")
+	_p ("    jcenter()")
+	_p ("  }")
+	_p ("  dependencies {")
+	_p ("    classpath 'com.android.tools.build:gradle:1.1.0'")
+	_p ("  }")
+	_p ("}")
+	_p ("")
+	_p ("allprojects {")
+	_p ("  repositories {")
+	_p ("    jcenter()")
+	_p ("  }")
+	_p ("}")
+	_p ("")
+	_p ("apply plugin: 'com.android.application'")
+	_p ("")
+	_p ("android {")
+	_p ("  compileSdkVersion 21")
+	_p ("  buildToolsVersion '21.1.2'")
+	_p ("  sourceSets {")
+	_p ("    main {")
+	_p ("      jniLibs.srcDir './libs'")
+	_p ("      jni.srcDirs = []")
+	_p (string.format ("      manifest.srcFile '%s'", processpath (premake.ndkbuild.gradle.manifest)))
+	
+	if #premake.ndkbuild.gradle.java_srcdirs > 0 then
+		_p (string.format ("      java.srcDirs = [%s]", fmt_srcdirs (premake.ndkbuild.gradle.java_srcdirs)))
+	end
+	--_p (string.format ("      resources.srcDirs = [%s]", ""))
+	
+	if #premake.ndkbuild.gradle.aidl_srcdirs > 0 then
+		_p (string.format ("      aidl.srcDirs = [%s]", fmt_srcdirs (premake.ndkbuild.gradle.aidl_srcdirs)))
+	end
+	
+	if #premake.ndkbuild.gradle.renderscript_srcdirs > 0 then
+		_p (string.format ("      renderscript.srcDirs = [%s]", fmt_srcdirs (premake.ndkbuild.gradle.renderscript_srcdirs)))
+	end
+	
+	if #premake.ndkbuild.gradle.res_srcdirs > 0 then
+		_p (string.format ("      res.srcDirs = [%s]", fmt_srcdirs (premake.ndkbuild.gradle.res_srcdirs)))
+	end
+	
+	if #premake.ndkbuild.gradle.assets_srcdirs > 0 then
+		_p (string.format ("      assets.srcDirs = [%s]", fmt_srcdirs (premake.ndkbuild.gradle.assets_srcdirs)))
+	end
+	
+	_p ("    }")
+	_p ("  }")
+	_p ("}")
+end
+
 premake.ndkbuild.generate_project_android_mk = function (prj)
 	_p ("LOCAL_PATH := $(call my-dir)")
 	_p ("include $(CLEAR_VARS)")
@@ -64,15 +166,12 @@ premake.ndkbuild.generate_project_android_mk = function (prj)
 	_p ("LOCAL_MODULE := " .. prj.name)
 	-- _p ("$(info LOCAL_PATH = $(LOCAL_PATH))")
 	
-	local mkpath = path.join (prj.solution.location, "jni", prj.name)
+	local refpath = path.join (prj.solution.location, "jni", prj.name)
 	
 	function processpath(p)
-		if (path.isabsolute (p)) then
-			return p
-		end
 		local absofp = path.getabsolute (path.join (prj.location, p))
-		local relofp = path.getrelative (mkpath, absofp)
-		-- print (mkpath .. "; " .. absofp .. "; " .. relofp)
+		local relofp = path.getrelative (refpath, absofp)
+		-- print (refpath .. "; " .. absofp .. "; " .. relofp)
 		return relofp
 	end
 	
@@ -158,8 +257,6 @@ premake.ndkbuild.generate_project_android_mk = function (prj)
 				_p (string.format ("LOCAL_SRC_FILES += $(LOCAL_PATH)/%s", processpath (file)))
 			end
 		end
-		
-		
 	end
 	
 	_p ("")
@@ -185,6 +282,9 @@ premake.ndkbuild.onsolution = function (sln)
 	
 	premake.generate (sln, path.join (sln.location, "jni", "Application.mk"), premake.ndkbuild.generate_application_mk)
 	premake.generate (sln, path.join (sln.location, "jni", "Android.mk"), premake.ndkbuild.generate_solution_android_mk)
+	premake.generate (sln, path.join (sln.location, "build.gradle"), premake.ndkbuild.generate_solution_build_gradle)
+	premake.generate (sln, path.join (sln.location, "settings.gradle"), function (sln) _p (string.format ("rootProject.name = '%s'", sln.name)) end)
+	
 end
 
 premake.ndkbuild.onproject = function (prj)

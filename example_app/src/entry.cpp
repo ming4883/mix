@@ -5,6 +5,8 @@
 #include <jni.h>
 #include <android/log.h>
 #include <android/native_window_jni.h>
+#include <android/native_window_jni.h>
+#include <EGL/egl.h>
 
 void logI (const char* msg)
 {
@@ -17,7 +19,7 @@ void logI (const char* fmt, Args&&... args)
 	__android_log_print (ANDROID_LOG_INFO, "bgfx", fmt, args...);
 }
 
-#define JNIMETHOD(type,method)	JNIEXPORT type JNICALL Java_ming_test_gradle01_MainActivity_00024NativeCode_ ## method
+#define JNIMETHOD(type, method)	JNIEXPORT type JNICALL Java_org_mix_common_BaseActivity_00024NativeCode_ ## method
 
 // JNI native method
 extern "C" {
@@ -27,10 +29,16 @@ extern "C" {
 	JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
 		logI ("%d, %d", surfaceWidth, surfaceHeight);
+
 		
-		//ANativeWindow* win = ANativeWindow_fromSurface (env, surface);
-		//bgfx::androidSetWindow (win);
-		
+		bgfx::PlatformData pd;
+		pd.ndt				= NULL;
+		pd.nwh    			= NULL;
+		pd.context      	= eglGetCurrentContext();
+		//pd.backBuffer   	= NULL;
+		//pd.backBufferDS 	= NULL;
+		bgfx::setPlatformData (pd);
+
 		logI ("renderFrame");
 		bgfx::renderFrame();
 
@@ -46,7 +54,6 @@ extern "C" {
 	JNIMETHOD (void, handleUpdate) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
 		static int s_state = 0;
-		
 		bgfx::setViewRect (k_swapId, 0, 0, surfaceWidth, surfaceHeight);
 		
 		bgfx::setViewClear (k_swapId
@@ -64,7 +71,7 @@ extern "C" {
 	
 	JNIMETHOD (void, handleQuit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
-		logI ("quit");
+		logI ("quit");	
 		bgfx::shutdown ();
 	}
 }

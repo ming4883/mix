@@ -33,6 +33,9 @@ if _ACTION == "ndkbuild" then
 	buildoptions {
 		"-std=c++11"
 	}
+	defines {
+		"BGFX_CONFIG_MULTITHREADED=0"
+	}
 end
 
 -- mix functions
