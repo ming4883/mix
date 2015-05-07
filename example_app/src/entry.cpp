@@ -35,8 +35,8 @@ extern "C" {
 		pd.ndt				= NULL;
 		pd.nwh    			= NULL;
 		pd.context      	= eglGetCurrentContext();
-		//pd.backBuffer   	= NULL;
-		//pd.backBufferDS 	= NULL;
+		pd.backBuffer   	= NULL;
+		pd.backBufferDS 	= NULL;
 		bgfx::setPlatformData (pd);
 
 		logI ("renderFrame");
