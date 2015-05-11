@@ -14,42 +14,25 @@ solution "example_app"
 			"bgfx-static",
 		}
 		
-	ndkbuild_appabiextra ("example-app", "armeabi", "Release", {
+	ndkbuild_appabiextra ("armeabi", "Release", {
 		"LOCAL_ARM_MODE := arm",
 	})
-	ndkbuild_appabiextra ("example-app", "armeabi", "Debug", {
-		"LOCAL_ARM_MODE := arm",
-	})
-	ndkbuild_appabiextra ("example-app", "armeabi-v7a", "Release", {
+	ndkbuild_appabiextra ("armeabi-v7a", "Release", {
 		"LOCAL_ARM_MODE := arm",
 		"LOCAL_ARM_NEON := true",
 	})
-	ndkbuild_appabiextra ("example-app", "armeabi-v7a", "Debug", {
+	ndkbuild_appabiextra ("armeabi*", "Debug", {
 		"LOCAL_ARM_MODE := arm",
 	})
 	
-	ndkbuild_appabiextra ("bgfx-static", "armeabi", "Release", {
-		"LOCAL_ARM_MODE := arm",
-	})
-	ndkbuild_appabiextra ("bgfx-static", "armeabi", "Debug", {
-		"LOCAL_ARM_MODE := arm",
-	})
-	ndkbuild_appabiextra ("bgfx-static", "armeabi-v7a", "Release", {
-		"LOCAL_ARM_MODE := arm",
-		"LOCAL_ARM_NEON := true",
-	})
-	ndkbuild_appabiextra ("bgfx-static", "armeabi-v7a", "Debug", {
-		"LOCAL_ARM_MODE := arm",
-	})
+	ndkbuild_gradle().manifest = path.join (PROJECT_DIR, "android/AndroidManifest.xml")
 	
-	ndkbuild_gradle_manifest (path.join (PROJECT_DIR, "android/AndroidManifest.xml"))
-	
-	ndkbuild_gradle_java_srcdirs {
+	ndkbuild_gradle().java_srcdirs = {
 		path.join (MIX_COMMON_DIR, "android/java"),
 		path.join (PROJECT_DIR, "android/java")
 	}
 	
-	ndkbuild_gradle_res_srcdirs {
+	ndkbuild_gradle().res_srcdirs = {
 		path.join (PROJECT_DIR, "android/res")
 	}
 	--defines ({"TEST_COMMON=1", "TEST_APP=1"})
