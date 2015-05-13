@@ -7,7 +7,13 @@ premake.ndkbuild.generate_application_dot_mk = function (sln)
 end
 
 premake.ndkbuild.generate_solution_android_dot_mk = function (sln)
-	_p ("include $(call all-subdir-makefiles)")
+	
+	local content = [[
+include $(call all-subdir-makefiles)
+$(info Compiling for $(TARGET_ARCH_ABI) - $(APP_OPTIM))
+]]
+	_p (content)
+
 end
 
 premake.ndkbuild.onsolution = function (sln)

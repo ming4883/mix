@@ -3,7 +3,7 @@ premake.ndkbuild.gradle = {}
 premake.ndkbuild.gradle.compileSdkVersion = 21
 premake.ndkbuild.gradle.buildToolsVersion = '21.1.2'
 premake.ndkbuild.gradle.versionName = "1.0.0"
-premake.ndkbuild.gradle.versionCode = 1900000 -- please follow the xxyyzzz convention stated in http://developer.android.com/google/play/publishing/multiple-apks.html
+premake.ndkbuild.gradle.versionCode = 1901001 -- please follow the xxyyzzz convention stated in http://developer.android.com/google/play/publishing/multiple-apks.html
 premake.ndkbuild.gradle.minSdkVersion = 19 -- http://developer.android.com/google/play/publishing/multiple-apks.html
 premake.ndkbuild.gradle.targetSdkVersion = 19 -- http://developer.android.com/google/play/publishing/multiple-apks.html
 premake.ndkbuild.gradle.manifest = "AndroidManifest.xml"
@@ -27,37 +27,75 @@ end
 
 premake.ndkbuild.generate_solution_support_dot_gradle = function (sln)
 
-	_p ("def readLocalProp () {")
-	_p ("	Properties properties = new Properties()")
-	_p ("	properties.load(project.rootProject.file('local.properties').newDataInputStream())")
-	_p ("	return properties")
-	_p ("}")
+	local content = [[
+def readLocalProp () {
+	Properties properties = new Properties()
+	properties.load(project.rootProject.file('local.properties').newDataInputStream())
+	return properties
+}
+def invokeNDKBuild (debuggable, cleaning) {
+	def properties = readLocalProp()
+	def ndkDir = properties.getProperty('ndk.dir')
+	def osName = System.getProperty('os.name').toLowerCase()
+	def args = new ArrayList<List>()
+	if (osName.contains ('windows')) {
+		args.add('cmd')
+		args.add('/c')
+		args.add(ndkDir + '/ndk-build.cmd')
+	}
+	else {
+		args.add(ndkDir + '/ndk-build')
+	}
 
-	_p ("def invokeNDKBuild () {")
-	_p ("	def properties = readLocalProp()")
-	_p ("	def ndkDir = properties.getProperty('ndk.dir')")
-	_p ("	def osName = System.getProperty('os.name').toLowerCase()")
-	_p ("	if (osName.contains ('windows')) {")
-	_p ("		def jniPath = file(file('jni/').absolutePath + '/')")
-	_p ("		def pb = new ProcessBuilder('cmd', '/c', ndkDir + '/ndk-build.cmd', 'NDK_DEBUG=1');")
-	_p ("		pb.redirectErrorStream(true)")
-	_p ("		pb.directory(jniPath)")
-	_p ("		def process = pb.start()")
-	_p ("")
-	_p ("		def stdout = process.getInputStream()")
-	_p ("		def reader = new BufferedReader(new InputStreamReader(stdout))")
-	_p ("")
-	_p ("		def line")
-	_p ("		while ((line = reader.readLine()) != null) {")
-	_p ("			println line")
-	_p ("		}")
-	_p ("")
-	_p ("		if (0 != process.exitValue())")
-	_p ("			return false")
-	_p ("	}")
-	_p ("")
-	_p ("	return true")
-	_p ("}")
+	args.add (debuggable ? 'NDK_DEBUG=1' : 'NDK_DEBUG=0')
+
+	if (cleaning)
+		args.add('clean')
+
+	def jniPath = file(file('jni/').absolutePath + '/')
+
+	def pb = new ProcessBuilder(args);
+	pb.redirectErrorStream(true)
+	pb.directory(jniPath)
+	def process = pb.start()
+
+	def stdout = process.getInputStream()
+	def reader = new BufferedReader(new InputStreamReader(stdout))
+
+	def line
+	while ((line = reader.readLine()) != null) {
+		println line
+	}
+
+	if (0 != process.exitValue())
+		return false
+
+	return true
+}
+
+android.buildTypes.each { theBuildType ->
+	def buildName = theBuildType.name.capitalize()
+	task ("compile${buildName}Native") {
+		doLast {
+			if (!invokeNDKBuild (theBuildType.debuggable, false))
+				throw new StopExecutionException()
+		}
+	}
+	task ("clean${buildName}Native") {
+		doLast {
+			if (!invokeNDKBuild (theBuildType.debuggable, true))
+				throw new StopExecutionException()
+		}
+	}
+	clean.dependsOn ("clean${buildName}Native")
+	tasks.whenTaskAdded{ theTask ->
+		if(theTask.name == "compile${buildName}Ndk") {
+			theTask.dependsOn("compile${buildName}Native")
+		}
+	}
+}
+]]
+	_p (content)
 end
 
 premake.ndkbuild.generate_solution_build_dot_gradle = function (sln)
@@ -157,7 +195,8 @@ premake.ndkbuild.generate_solution_build_dot_gradle = function (sln)
 		codes = codes .. "]"
 		_p (codes)
 		_p ("    output.versionCodeOverride = android.defaultConfig.versionCode + codes.get (output.getFilter (OutputFile.ABI)) * " .. premake.ndkbuild.gradle.splits.versionCodeBase)
-		_p ("} }")		
+		_p ("  }")
+		_p ("}")		
 	end
 	
 	_p ("apply from : 'support.gradle'")

@@ -20,28 +20,35 @@ premake.ndkbuild.generate_project_android_mk = function (prj)
 	for _, cfgname in ipairs (prj.solution.configurations) do
 		local cfg = premake.getconfig (prj, cfgname)
 		
-		-- $(findstring pattern, in) return "" if pattern is not found
+		-- NOTE: $(findstring pattern, in) return "" if pattern is not found
 		_p (string.format ("ifneq (, $(findstring %s, $(APP_OPTIM)))", string.lower (cfg.name)))
-		_p (string.format ("  $(info Building with %s configuration)", cfg.name))
+		--_p (string.format ("  $(info Building with %s configuration)", cfg.name))
 		
 		if #cfg.includedirs > 0 then
 			_p ("  # includedirs")
 			for _, incdir in ipairs (cfg.includedirs) do
-				_p (string.format ("  LOCAL_C_INCLUDES += $(LOCAL_PATH)/%s", processpath (incdir)))
+				_p (string.format ("  PROJECT_C_INCLUDES += $(LOCAL_PATH)/%s", processpath (incdir)))
 			end
 		end
 		
 		if #cfg.defines > 0 then
 			_p ("  # defines")
 			for _, def in ipairs (cfg.defines) do
-				_p (string.format ("  LOCAL_CFLAGS += -D%s", def))
+				_p (string.format ("  PROJECT_CFLAGS += -D%s", def))
 			end
 		end
 		
 		if #cfg.buildoptions > 0 then
 			_p ("  # buildoptions")
 			for _, opt in ipairs (cfg.buildoptions) do
-				_p (string.format ("  LOCAL_CFLAGS += %s", opt))
+				_p (string.format ("  PROJECT_CFLAGS += %s", opt))
+			end
+		end
+		
+		if #cfg.linkoptions > 0 then
+			_p ("  # linkoptions")
+			for _, opt in ipairs (cfg.linkoptions) do
+				_p (string.format ("  PROJECT_LDFLAGS += %s", opt))
 			end
 		end
 		
@@ -50,7 +57,7 @@ premake.ndkbuild.generate_project_android_mk = function (prj)
 		if #ldlibs > 0  then
 			_p ("  # dynamic libraries")
 			for _, lnk in ipairs (ldlibs) do
-				_p (string.format ("  LOCAL_LDLIBS += -l%s", lnk))
+				_p (string.format ("  PROJECT_LDLIBS += -l%s", lnk))
 			end
 		end
 		
@@ -63,17 +70,10 @@ premake.ndkbuild.generate_project_android_mk = function (prj)
 				
 				-- _p (string.format ("kind = %s", dep.kind))
 				if dep.kind == "StaticLib" then
-					_p (string.format ("  LOCAL_STATIC_LIBRARIES += %s", dep.name))
+					_p (string.format ("  PROJECT_STATIC_LIBRARIES += %s", dep.name))
 				else
-					_p (string.format ("  LOCAL_SHARED_LIBRARIES += %s", dep.name))
+					_p (string.format ("  PROJECT_SHARED_LIBRARIES += %s", dep.name))
 				end
-			end
-		end
-		
-		if prj.kind ~= "StaticLib" and #cfg.linkoptions > 0 then
-			_p ("  # linkoptions")
-			for _, opt in ipairs (cfg.linkoptions) do
-				_p (string.format ("  LOCAL_LDFLAGS += %s", opt))
 			end
 		end
 		
@@ -101,11 +101,21 @@ premake.ndkbuild.generate_project_android_mk = function (prj)
 	
 	_p ("")
 	
+	_p ("LOCAL_C_INCLUDES := $(PROJECT_C_INCLUDES)")
+	_p ("LOCAL_CFLAGS := $(PROJECT_CFLAGS)")
+	_p ("LOCAL_STATIC_LIBRARIES := $(PROJECT_STATIC_LIBRARIES)")
+	_p ("LOCAL_SHARED_LIBRARIES := $(PROJECT_SHARED_LIBRARIES)")
+	
+	if prj.kind ~= "StaticLib" then
+		_p ("LOCAL_LDFLAGS := $(PROJECT_LDFLAGS)")
+		_p ("LOCAL_LDLIBS := $(PROJECT_LDLIBS)")
+	end
+	
 	if prj.kind == "StaticLib" or prj.kind == "SharedLib" then
-		_p ("LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)")
-		_p ("LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)")
-		_p ("LOCAL_EXPORT_LDFLAGS := $(LOCAL_LDFLAGS)")
-		_p ("LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)")
+		_p ("LOCAL_EXPORT_C_INCLUDES := $(PROJECT_C_INCLUDES)")
+		_p ("LOCAL_EXPORT_CFLAGS := $(PROJECT_CFLAGS)")
+		_p ("LOCAL_EXPORT_LDFLAGS := $(PROJECT_LDFLAGS)")
+		_p ("LOCAL_EXPORT_LDLIBS := $(PROJECT_LDLIBS)")
 		_p ("")
 	end
 	
