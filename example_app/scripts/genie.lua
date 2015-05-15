@@ -35,4 +35,22 @@ solution "example_app"
 	ndkbuild_gradle().res_srcdirs = {
 		path.join (PROJECT_DIR, "android/res")
 	}
+	
+	ndkbuild_gradle().buildscript.repositories = {
+		--"maven { url 'https://maven.fabric.io/public' }"
+	}
+	
+	ndkbuild_gradle().buildscript.dependencies = {
+		--"classpath 'io.fabric.tools:gradle:1.+'"
+	}
+	
+	ndkbuild_gradle().plugins = {
+		-- "io.fabric"
+	}
+	
+	ndkbuild_gradle().dependencies = {
+		"compile 'com.google.android.gms:play-services-games:7.3.0'"
+	}
+	
+	ndkbuild_gradle().externalprojects["dummy"] = path.join (PROJECT_DIR, "vendor/dummy/android")
 	--defines ({"TEST_COMMON=1", "TEST_APP=1"})

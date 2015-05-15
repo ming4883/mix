@@ -1,5 +1,13 @@
 
 premake.ndkbuild.gradle = {}
+premake.ndkbuild.gradle.buildscript = {}
+premake.ndkbuild.gradle.buildscript.repositories = {}
+premake.ndkbuild.gradle.buildscript.dependencies = {}
+
+premake.ndkbuild.gradle.plugins = {}
+premake.ndkbuild.gradle.repositories = {}
+premake.ndkbuild.gradle.dependencies = {}
+
 premake.ndkbuild.gradle.compileSdkVersion = 21
 premake.ndkbuild.gradle.buildToolsVersion = '21.1.2'
 premake.ndkbuild.gradle.versionName = "1.0.0"
@@ -12,6 +20,7 @@ premake.ndkbuild.gradle.aidl_srcdirs = {}
 premake.ndkbuild.gradle.renderscript_srcdirs = {}
 premake.ndkbuild.gradle.res_srcdirs = {}
 premake.ndkbuild.gradle.assets_srcdirs = {}
+premake.ndkbuild.gradle.externalprojects = {}
 
 -- http://tools.android.com/tech-docs/new-build-system/user-guide/apk-splits
 premake.ndkbuild.gradle.splits = {}
@@ -25,6 +34,23 @@ function ndkbuild_gradle ()
 	return premake.ndkbuild.gradle
 end
 
+function processpath (r, p)
+	local absofp = p --path.getabsolute (path.join (r, p))
+	local relofp = path.getrelative (r, absofp)
+	-- print (r .. "; " .. absofp .. "; " .. relofp)
+	return relofp
+end
+
+premake.ndkbuild.generate_solution_settings_dot_gradle = function (sln)
+	_p (string.format ("rootProject.name = '%s'", sln.name))
+	
+	for k, v in pairs (premake.ndkbuild.gradle.externalprojects) do
+		_p (string.format ("include '%s'", k))
+		_p (string.format ("project (':%s').projectDir = new File (settingsDir, '%s')", k, processpath (sln.location, v)))
+	end
+	
+end
+
 premake.ndkbuild.generate_solution_support_dot_gradle = function (sln)
 
 	local content = [[
@@ -36,6 +62,10 @@ def readLocalProp () {
 def invokeNDKBuild (debuggable, cleaning) {
 	def properties = readLocalProp()
 	def ndkDir = properties.getProperty('ndk.dir')
+    if (!ndkDir) {
+	    logger.error ('\"ndk.dir\" is not set in local.properties')
+		return false
+	}
 	def osName = System.getProperty('os.name').toLowerCase()
 	def args = new ArrayList<List>()
 	if (osName.contains ('windows')) {
@@ -102,17 +132,10 @@ premake.ndkbuild.generate_solution_build_dot_gradle = function (sln)
 
 	local refpath = sln.location
 	
-	function processpath (p)
-		local absofp = path.getabsolute (path.join (sln.location, p))
-		local relofp = path.getrelative (refpath, absofp)
-		-- print (refpath .. "; " .. absofp .. "; " .. relofp)
-		return relofp
-	end
-	
 	function fmt_srcdirs (dirs)
 		local ret = ""
 		for _, p in ipairs (dirs) do
-			ret = ret .. string.format ("'%s', ", processpath (p))
+			ret = ret .. string.format ("'%s', ", processpath (refpath, p))
 		end
 		return ret
 	end
@@ -120,19 +143,53 @@ premake.ndkbuild.generate_solution_build_dot_gradle = function (sln)
 	_p ("buildscript {")
 	_p ("  repositories {")
 	_p ("    jcenter()")
+	if #premake.ndkbuild.gradle.buildscript.repositories > 0 then
+		_p (table.implode (premake.ndkbuild.gradle.buildscript.repositories, "    ", "", "\n"))
+	end
 	_p ("  }")
 	_p ("  dependencies {")
 	_p ("    classpath 'com.android.tools.build:gradle:1.1.0'")
+	if #premake.ndkbuild.gradle.buildscript.dependencies > 0 then
+		_p (table.implode (premake.ndkbuild.gradle.buildscript.dependencies, "    ", "", "\n"))
+	end
 	_p ("  }")
 	_p ("}")
-	_p ("")
-	_p ("allprojects {")
-	_p ("  repositories {")
-	_p ("    jcenter()")
-	_p ("  }")
-	_p ("}")
+	
 	_p ("")
 	_p ("apply plugin: 'com.android.application'")
+	if #premake.ndkbuild.gradle.plugins > 0 then
+		_p (table.implode (premake.ndkbuild.gradle.plugins, "apply plugin: '", "'", "\n"))
+	end
+	
+	_p ("allprojects")
+	_p ("{")
+	_p ("  buildDir = new File (rootProject.buildDir, name)")
+	_p ("}")
+	
+	_p ("")
+	_p ("repositories {")
+	_p ("  jcenter()")
+	if #premake.ndkbuild.gradle.repositories > 0 then
+		_p (table.implode (premake.ndkbuild.gradle.repositories, "  ", "", "\n"))
+	end
+	_p ("}")
+	
+	if #premake.ndkbuild.gradle.dependencies > 0 then
+		_p ("")
+		_p ("dependencies {")
+		_p (table.implode (premake.ndkbuild.gradle.dependencies, "  ", "", "\n"))
+		_p ("}")
+	end
+	
+	--if #premake.ndkbuild.gradle.externalprojects > 0 then
+		_p ("")
+		_p ("dependencies {")
+		for k, v in pairs (premake.ndkbuild.gradle.externalprojects) do
+			_p (string.format ("  compile project(':%s')", k))
+		end
+		_p ("}")
+	--end
+	
 	_p ("")
 	_p ("android {")
 	_p (string.format ("  compileSdkVersion %d", premake.ndkbuild.gradle.compileSdkVersion))
@@ -147,7 +204,7 @@ premake.ndkbuild.generate_solution_build_dot_gradle = function (sln)
 	_p ("    main {")
 	_p ("      jniLibs.srcDir './libs'")
 	_p ("      jni.srcDirs = []")
-	_p (string.format ("      manifest.srcFile '%s'", processpath (premake.ndkbuild.gradle.manifest)))
+	_p (string.format ("      manifest.srcFile '%s'", processpath (refpath, premake.ndkbuild.gradle.manifest)))
 	
 	if #premake.ndkbuild.gradle.java_srcdirs > 0 then
 		_p (string.format ("      java.srcDirs = [%s]", fmt_srcdirs (premake.ndkbuild.gradle.java_srcdirs)))

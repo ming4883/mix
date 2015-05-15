@@ -23,6 +23,6 @@ premake.ndkbuild.onsolution = function (sln)
 	premake.generate (sln, path.join (sln.location, "jni", "Android.mk"), premake.ndkbuild.generate_solution_android_dot_mk)
 	premake.generate (sln, path.join (sln.location, "build.gradle"), premake.ndkbuild.generate_solution_build_dot_gradle)
 	premake.generate (sln, path.join (sln.location, "support.gradle"), premake.ndkbuild.generate_solution_support_dot_gradle)
-	premake.generate (sln, path.join (sln.location, "settings.gradle"), function (sln) _p (string.format ("rootProject.name = '%s'", sln.name)) end)
+	premake.generate (sln, path.join (sln.location, "settings.gradle"), premake.ndkbuild.generate_solution_settings_dot_gradle)
 	
 end
