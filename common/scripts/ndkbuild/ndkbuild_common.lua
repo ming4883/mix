@@ -13,12 +13,6 @@ function ndkbuild_appabi (abi)
 	premake.ndkbuild.appabi = abi
 end
 
-
-function ndkbuild_keyof (prj, abi, cfg)
-	--return (prj .. abi) .. cfg 
-	return string.format ("%s,%s,%s", prj, abi, cfg)
-end
-
 -- Set extra lines for specific ABIs of the current project's Android.mk
 -- Example:
 -- project ("mylib")
@@ -28,7 +22,7 @@ end
 --
 function ndkbuild_appabiextra (abi, cfg, extra)
 	local prj = project().name
-	premake.ndkbuild.appabiextra[ndkbuild_keyof (prj, abi, cfg)] = extra
+	premake.ndkbuild.appabiextra[string.format ("%s,%s,%s", prj, abi, cfg)] = extra
 end
 
 function ndkbuild_retrieve_appabiextra (prj, abi, cfg)

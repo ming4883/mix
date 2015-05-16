@@ -1,4 +1,5 @@
-dofile ("ndkbuild/_ndkbuild.lua")
+--dofile ("ndkbuild/_ndkbuild.lua")
+dofile ("gradle/_gradle.lua")
 
 BGFX_DIR = path.getabsolute ("../../vendor/bgfx/")
 BX_DIR =  path.getabsolute ("../../vendor/bx/")
@@ -23,7 +24,7 @@ end
 bgfxProject ("-static", "StaticLib", {})
 
 project ("bgfx-static")
-if _ACTION == "ndkbuild" then
+if _ACTION == "gradle" then
 	links {
 		"EGL",
 		"GLESv2",
@@ -42,7 +43,7 @@ end
 function mix_project (name)
 	project (name)
 	uuid (os.uuid (name))
-	if _ACTION == "ndkbuild" then
+	if _ACTION == "gradle" then
 		buildoptions {
 			"-std=c++11"
 		}
