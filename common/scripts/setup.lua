@@ -10,10 +10,12 @@ configurations ({"Debug", "Release"})
 -- bx toolchain
 dofile (path.join (BX_DIR, "scripts/toolchain.lua"))
 
-if not toolchain (path.join (path.getabsolute ("../../.build"), solution().name), path.join(BGFX_DIR, "3rdparty")) then
+if not toolchain ("", path.join(BGFX_DIR, "3rdparty")) then
 	print ("toolchain() failed")
 	return -- no action specified
 end
+
+location (path.join(path.getabsolute ("../../.build"), solution().name, _ACTION))
 
 -- bgfx library
 dofile (path.join (BGFX_DIR, "scripts/bgfx.lua"))

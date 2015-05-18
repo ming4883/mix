@@ -6,7 +6,7 @@ premake.gradle.generate_project_android_mk = function (prj)
 	_p ("LOCAL_MODULE := " .. prj.name)
 	-- _p ("$(info LOCAL_PATH = $(LOCAL_PATH))")
 	
-	local refpath = path.join (prj.solution.location, "jni", prj.name)
+	local refpath = path.join (prj.solution.location, "app/jni", prj.name)
 	
 	function processpath(p)
 		local absofp = path.getabsolute (path.join (prj.location, p))

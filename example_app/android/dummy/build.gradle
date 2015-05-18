@@ -1,17 +1,17 @@
 apply plugin: 'com.android.library'
 
 repositories {
-  jcenter()
+    jcenter()
 }
 
 android {
-  compileSdkVersion 21
-  buildToolsVersion '21.1.2'
+    compileSdkVersion 21
+    buildToolsVersion '21.1.2'
   
-  sourceSets {
-    main {
-      java.srcDirs = ['./java']
-	  manifest.srcFile './AndroidManifest.xml'
+    sourceSets {
+        main {
+            java.srcDirs = ['./java']
+	        manifest.srcFile './AndroidManifest.xml'
+        }
     }
-  }
 }
