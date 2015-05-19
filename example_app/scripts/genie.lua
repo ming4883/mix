@@ -4,28 +4,9 @@ local PROJECT_DIR = path.getabsolute ("../")
 solution "example_app"
 	dofile (path.join (MIX_COMMON_DIR, "scripts/setup.lua"))
 	
-	mix_project_app "example_app"
-		files {
-			path.join (PROJECT_DIR, "src/entry.cpp")
-		}
-		links {
-			"bgfx-static",
-		}
-	
 	if _ACTION == "gradle" then
 
 		premake.gradle.appabi = {"armeabi", "armeabi-v7a", "x86"}
-		
-		premake.gradle.ndk.appabiextra.add ("armeabi", "Release", {
-			"LOCAL_ARM_MODE := arm",
-		})
-		premake.gradle.ndk.appabiextra.add ("armeabi-v7a", "Release", {
-			"LOCAL_ARM_MODE := arm",
-			"LOCAL_ARM_NEON := true",
-		})
-		premake.gradle.ndk.appabiextra.add ("armeabi*", "Debug", {
-			"LOCAL_ARM_MODE := arm",
-		})
 		
 		premake.gradle.manifest = path.join (PROJECT_DIR, "android/AndroidManifest.xml")
 		
@@ -62,4 +43,15 @@ solution "example_app"
 		}
 	end
 	
+	project ("example_app")
+		mix_setup_app ()
+	
+		files {
+			path.join (PROJECT_DIR, "src/entry.cpp")
+		}
+		
+		links {
+			"bgfx-static",
+		}
+		
 	--defines ({"TEST_COMMON=1", "TEST_APP=1"})
