@@ -18,13 +18,21 @@ end
 -- output location
 location (path.join(path.getabsolute ("../../.build"), solution().name, _ACTION))
 
+function mix_is_android()
+	return _ACTION == "gradle"
+end
+
+function mix_is_ios()
+	return _ACTION == "xcode4" and "ios" == _OPTIONS["xcode"]
+end
+
 -- mix functions
 function mix_setup_project ()
 	local prj = project()
 	
 	uuid (os.uuid (prj.name))
 	
-	if _ACTION == "gradle" then
+	if mix_is_android() then
 		buildoptions {
 			"-std=c++11"
 		}
@@ -41,6 +49,12 @@ function mix_setup_project ()
 		})
 	end
 	
+	if mix_is_ios() then
+		buildoptions {
+			"-std=c++11"
+		}
+	end
+	
 end
 
 function mix_setup_staticlib ()
@@ -55,7 +69,22 @@ end
 		
 function mix_setup_app ()
 	mix_setup_project()
-	kind ("ConsoleApp")
+	kind ("WindowedApp")
+	
+	includedirs {
+		path.join (BX_DIR, "include"),
+		path.join (BGFX_DIR, "include"),
+	}
+	
+	if mix_is_ios() then
+		linkoptions {
+			"-framework CoreFoundation",
+			"-framework Foundation",
+			"-framework OpenGLES",
+			"-framework UIKit",
+			"-framework QuartzCore",
+		}
+	end
 end
 
 -- bgfx library
@@ -67,18 +96,22 @@ end
 bgfxProject ("-static", "StaticLib", {})
 
 project ("bgfx-static")
-if _ACTION == "gradle" then
-	links {
-		"EGL",
-		"GLESv2",
-		"log",
-		"android",
-	}
-	buildoptions {
-		"-std=c++11"
-	}
-	defines {
-		"BGFX_CONFIG_MULTITHREADED=0"
-	}
+	if mix_is_android() then
+		links {
+			"EGL",
+			"GLESv2",
+			"log",
+			"android",
+		}
+		defines {
+			"BGFX_CONFIG_MULTITHREADED=0"
+		}
+	end
+	
+	if mix_is_ios() then
+		defines {
+			"BGFX_CONFIG_MULTITHREADED=0"
+		}
+	end
+	
 	mix_setup_project()
-end

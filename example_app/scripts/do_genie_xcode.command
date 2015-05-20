@@ -2,4 +2,5 @@
 BASEDIR=$(dirname $0)
 cd $BASEDIR
 
-../../vendor/bx/tools/bin/darwin/genie xcode
+clear
+../../vendor/bx/tools/bin/darwin/genie --xcode=ios xcode4

@@ -53,9 +53,19 @@ solution "example_app"
 			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry.cpp")
 		}
 		
-		files {
-			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_android.cpp")
-		}
+		if mix_is_android() then
+			files {
+				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_android.cpp")
+			}
+		end
+		
+		if mix_is_ios() then
+			files {
+				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_ios.mm"),
+				path.join (PROJECT_DIR, "ios/info.plist"),
+				path.join (PROJECT_DIR, "ios/Default-568h@2x.png"),
+			}
+		end
 		
 		includedirs {
 			path.join (MIX_COMMON_DIR, "include/")
