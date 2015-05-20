@@ -47,6 +47,7 @@ premake.gradle.renderscript_srcdirs = {}
 premake.gradle.res_srcdirs = {}
 premake.gradle.assets_srcdirs = {}
 premake.gradle.externalprojects = {}
+premake.gradle.multiDexEnabled = false -- https://developer.android.com/tools/building/multidex.html
 
 -- http://tools.android.com/tech-docs/new-build-system/user-guide/apk-splits
 premake.gradle.splits = {}
@@ -251,6 +252,7 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 	
 	if #premake.gradle.dependencies > 0 
 	or #premake.gradle.externalprojects > 0
+	or premake.gradle.multiDexEnabled
 	then
 		_p ("")
 		_p ("dependencies {")
@@ -259,6 +261,10 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 
 		for k, v in pairs (premake.gradle.externalprojects) do
 			_p (string.format ("    compile project(':%s')", k))
+		end
+		
+		if premake.gradle.multiDexEnabled then
+			_p ("    compile 'com.android.support:multidex:1.0.0'")
 		end
 		
 		_p ("}")
@@ -273,6 +279,7 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 	_p (string.format ("        versionName '%s'", premake.gradle.versionName))
 	_p (string.format ("        minSdkVersion %d", premake.gradle.minSdkVersion))
 	_p (string.format ("        targetSdkVersion %d", premake.gradle.targetSdkVersion))
+	_p (string.format ("        multiDexEnabled %s", premake.gradle.multiDexEnabled))
 	_p ("    }") -- defaultConfig
 	
 	for k, v in pairs(premake.gradle.buildTypes) do

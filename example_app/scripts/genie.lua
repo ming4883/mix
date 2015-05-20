@@ -41,13 +41,24 @@ solution "example_app"
 		premake.gradle.buildTypes.release.proguardFiles = {
 			"getDefaultProguardFile('proguard-android.txt')"
 		}
+		
+		premake.gradle.multiDexEnabled = true
 	end
 	
 	project ("example_app")
 		mix_setup_app ()
 	
 		files {
-			path.join (PROJECT_DIR, "src/entry.cpp")
+			path.join (PROJECT_DIR, "src/app.cpp"),
+			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry.cpp")
+		}
+		
+		files {
+			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_android.cpp")
+		}
+		
+		includedirs {
+			path.join (MIX_COMMON_DIR, "include/")
 		}
 		
 		links {
