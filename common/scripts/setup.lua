@@ -1,5 +1,5 @@
---dofile ("ndkbuild/_ndkbuild.lua")
 dofile ("gradle/_gradle.lua")
+dofile ("xcode/_xcode.lua")
 
 BGFX_DIR = path.getabsolute ("../../vendor/bgfx/")
 BX_DIR =  path.getabsolute ("../../vendor/bx/")
@@ -16,14 +16,16 @@ if not toolchain ("", path.join(BGFX_DIR, "3rdparty")) then
 end
 
 -- output location
-location (path.join(path.getabsolute ("../../.build"), solution().name, _ACTION))
+local buildpath = path.join(path.getabsolute ("../../.build"), solution().name, _ACTION)
+location (buildpath)
+targetdir (buildpath)
 
 function mix_is_android()
 	return _ACTION == "gradle"
 end
 
 function mix_is_ios()
-	return _ACTION == "xcode4" and "ios" == _OPTIONS["xcode"]
+	return string.find (_ACTION, "xcode") ~= nil and "ios" == _OPTIONS["xcode"]
 end
 
 -- mix functions

@@ -63,7 +63,7 @@ solution "example_app"
 			files {
 				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_ios.mm"),
 				path.join (PROJECT_DIR, "ios/info.plist"),
-				path.join (PROJECT_DIR, "ios/Default-568h@2x.png"),
+				path.join (PROJECT_DIR, "ios/LaunchScreen.xib"),
 			}
 		end
 		

@@ -5,6 +5,10 @@
 --
 
 	premake.xcode = { }
+	
+	dofile "xcode_common.lua"
+	dofile "xcode_project.lua"
+	dofile "xcode4_workspace.lua"
 
 --
 -- Set default toolset
