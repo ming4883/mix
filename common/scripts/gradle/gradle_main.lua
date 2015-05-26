@@ -65,13 +65,13 @@ local processpath = function (r, p)
 end
 
 premake.gradle.generate_solution_settings_dot_gradle = function (sln)
-	_p (string.format ("rootProject.name = '%s'", sln.name))
+	_p ("rootProject.name = '%s'", sln.name)
 	
 	_p ("include ':app'")
 	
 	for k, v in pairs (premake.gradle.externalprojects) do
-		_p (string.format ("include '%s'", k))
-		_p (string.format ("project (':%s').projectDir = new File (settingsDir, '%s')", k, processpath (sln.location, v)))
+		_p ("include '%s'", k)
+		_p ("project (':%s').projectDir = new File (settingsDir, '%s')", k, processpath (sln.location, v))
 	end
 	
 end
@@ -199,23 +199,23 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 	
 	local process_buildtype = function (name, btype)
 	
-		_p (string.format ("    android.buildTypes.%s {", name))
-		_p (string.format ("        debuggable = %s", btype.debuggable))
-		_p (string.format ("        jniDebuggable = %s", btype.jniDebuggable))
-		_p (string.format ("        renderscriptDebuggable = %s", btype.renderscriptDebuggable))
-		_p (string.format ("        renderscriptOptimLevel = %s", btype.renderscriptOptimLevel))
+		_p ("    android.buildTypes.%s {", name)
+		_p ("        debuggable = %s", btype.debuggable)
+		_p ("        jniDebuggable = %s", btype.jniDebuggable)
+		_p ("        renderscriptDebuggable = %s", btype.renderscriptDebuggable)
+		_p ("        renderscriptOptimLevel = %s", btype.renderscriptOptimLevel)
 		
 		if (nil ~= btype.applicationIdSuffix) then
-			_p (string.format ("        applicationIdSuffix = %s", btype.applicationIdSuffix))
+			_p ("        applicationIdSuffix = %s", btype.applicationIdSuffix)
 		end
 		
 		if (nil ~= btype.versionNameSuffix) then
-			_p (string.format ("        versionNameSuffix = %s", btype.versionNameSuffix))
+			_p ("        versionNameSuffix = %s", btype.versionNameSuffix)
 		end
 		
-		_p (string.format ("        zipAlignEnabled = %s", btype.zipAlignEnabled))
-		_p (string.format ("        minifyEnabled = %s", btype.minifyEnabled))
-		_p (string.format ("        shrinkResources = %s", btype.shrinkResources))
+		_p ("        zipAlignEnabled = %s", btype.zipAlignEnabled)
+		_p ("        minifyEnabled = %s", btype.minifyEnabled)
+		_p ("        shrinkResources = %s", btype.shrinkResources)
 		
 		if #btype.proguardFiles > 0 then
 	
@@ -224,9 +224,9 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 			
 			for _, v in ipairs (btype.proguardFiles) do
 				if string.find (v, pattern) then
-					_p (string.format ("            %s,", v))
+					_p ("            %s,", v)
 				else
-					_p (string.format ("            %s,", processpath (refpath, v)))
+					_p ("            %s,", processpath (refpath, v))
 				end
 			end
 			_p ("        ]")
@@ -272,14 +272,14 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 	
 	_p ("")
 	_p ("android {")
-	_p (string.format ("    compileSdkVersion %d", premake.gradle.compileSdkVersion))
-	_p (string.format ("    buildToolsVersion '%s'", premake.gradle.buildToolsVersion))
+	_p ("    compileSdkVersion %d", premake.gradle.compileSdkVersion)
+	_p ("    buildToolsVersion '%s'", premake.gradle.buildToolsVersion)
 	_p ("    defaultConfig {")
-	_p (string.format ("        versionCode %d", premake.gradle.versionCode))
-	_p (string.format ("        versionName '%s'", premake.gradle.versionName))
-	_p (string.format ("        minSdkVersion %d", premake.gradle.minSdkVersion))
-	_p (string.format ("        targetSdkVersion %d", premake.gradle.targetSdkVersion))
-	_p (string.format ("        multiDexEnabled %s", premake.gradle.multiDexEnabled))
+	_p ("        versionCode %d", premake.gradle.versionCode)
+	_p ("        versionName '%s'", premake.gradle.versionName)
+	_p ("        minSdkVersion %d", premake.gradle.minSdkVersion)
+	_p ("        targetSdkVersion %d", premake.gradle.targetSdkVersion)
+	_p ("        multiDexEnabled %s", premake.gradle.multiDexEnabled)
 	_p ("    }") -- defaultConfig
 	
 	for k, v in pairs(premake.gradle.buildTypes) do
@@ -292,27 +292,27 @@ premake.gradle.generate_solution_app_build_dot_gradle = function (sln)
 	_p ("        main {")
 	_p ("            jniLibs.srcDir './libs'")
 	_p ("            jni.srcDirs = []")
-	_p (string.format ("            manifest.srcFile '%s'", processpath (refpath, premake.gradle.manifest)))
+	_p ("            manifest.srcFile '%s'", processpath (refpath, premake.gradle.manifest))
 	
 	if #premake.gradle.java_srcdirs > 0 then
-		_p (string.format ("            java.srcDirs = [%s]", fmt_srcdirs (premake.gradle.java_srcdirs)))
+		_p ("            java.srcDirs = [%s]", fmt_srcdirs (premake.gradle.java_srcdirs))
 	end
-	--_p (string.format ("      resources.srcDirs = [%s]", ""))
+	--_p ("      resources.srcDirs = [%s]", "")
 	
 	if #premake.gradle.aidl_srcdirs > 0 then
-		_p (string.format ("            aidl.srcDirs = [%s]", fmt_srcdirs (premake.gradle.aidl_srcdirs)))
+		_p ("            aidl.srcDirs = [%s]", fmt_srcdirs (premake.gradle.aidl_srcdirs))
 	end
 	
 	if #premake.gradle.renderscript_srcdirs > 0 then
-		_p (string.format ("            renderscript.srcDirs = [%s]", fmt_srcdirs (premake.gradle.renderscript_srcdirs)))
+		_p ("            renderscript.srcDirs = [%s]", fmt_srcdirs (premake.gradle.renderscript_srcdirs))
 	end
 	
 	if #premake.gradle.res_srcdirs > 0 then
-		_p (string.format ("            res.srcDirs = [%s]", fmt_srcdirs (premake.gradle.res_srcdirs)))
+		_p ("            res.srcDirs = [%s]", fmt_srcdirs (premake.gradle.res_srcdirs))
 	end
 	
 	if #premake.gradle.assets_srcdirs > 0 then
-		_p (string.format ("            assets.srcDirs = [%s]", fmt_srcdirs (premake.gradle.assets_srcdirs)))
+		_p ("            assets.srcDirs = [%s]", fmt_srcdirs (premake.gradle.assets_srcdirs))
 	end
 	
 	_p ("        }") -- main

@@ -21,8 +21,8 @@ premake.gradle.generate_project_android_mk = function (prj)
 		local cfg = premake.getconfig (prj, cfgname)
 		
 		-- NOTE: $(findstring pattern, in) return "" if pattern is not found
-		_p (string.format ("ifneq (, $(findstring %s, $(APP_OPTIM)))", string.lower (cfg.name)))
-		--_p (string.format ("  $(info Building with %s configuration)", cfg.name))
+		_p ("ifneq (, $(findstring %s, $(APP_OPTIM)))", string.lower (cfg.name))
+		--_p ("  $(info Building with %s configuration)", cfg.name)
 		
 		if #cfg.includedirs > 0 then
 			_p ("  # includedirs")
@@ -34,21 +34,21 @@ premake.gradle.generate_project_android_mk = function (prj)
 		if #cfg.defines > 0 then
 			_p ("  # defines")
 			for _, def in ipairs (cfg.defines) do
-				_p (string.format ("  PROJECT_CFLAGS += -D%s", def))
+				_p ("  PROJECT_CFLAGS += -D%s", def)
 			end
 		end
 		
 		if #cfg.buildoptions > 0 then
 			_p ("  # buildoptions")
 			for _, opt in ipairs (cfg.buildoptions) do
-				_p (string.format ("  PROJECT_CFLAGS += %s", opt))
+				_p ("  PROJECT_CFLAGS += %s", opt)
 			end
 		end
 		
 		if #cfg.linkoptions > 0 then
 			_p ("  # linkoptions")
 			for _, opt in ipairs (cfg.linkoptions) do
-				_p (string.format ("  PROJECT_LDFLAGS += %s", opt))
+				_p ("  PROJECT_LDFLAGS += %s", opt)
 			end
 		end
 		
@@ -57,7 +57,7 @@ premake.gradle.generate_project_android_mk = function (prj)
 		if #ldlibs > 0  then
 			_p ("  # dynamic libraries")
 			for _, lnk in ipairs (ldlibs) do
-				_p (string.format ("  PROJECT_LDLIBS += -l%s", lnk))
+				_p ("  PROJECT_LDLIBS += -l%s", lnk)
 			end
 		end
 		
@@ -70,9 +70,9 @@ premake.gradle.generate_project_android_mk = function (prj)
 				
 				-- _p (string.format ("kind = %s", dep.kind))
 				if dep.kind == "StaticLib" then
-					_p (string.format ("  PROJECT_STATIC_LIBRARIES += %s", dep.name))
+					_p ("  PROJECT_STATIC_LIBRARIES += %s", dep.name)
 				else
-					_p (string.format ("  PROJECT_SHARED_LIBRARIES += %s", dep.name))
+					_p ("  PROJECT_SHARED_LIBRARIES += %s", dep.name)
 				end
 			end
 		end
@@ -81,8 +81,8 @@ premake.gradle.generate_project_android_mk = function (prj)
 			local extras = premake.gradle.ndk.appabiextra.get (prj.name, abi, cfgname)
 			if extras ~= nil and #extras > 0 then
 				_p ("")
-				_p (string.format ("  ifeq ($(TARGET_ARCH_ABI), %s)", abi))
-				_p (string.format ("    %s", table.concat (extras, "\n    ")))
+				_p ("  ifeq ($(TARGET_ARCH_ABI), %s)", abi)
+				_p ("    %s", table.concat (extras, "\n    "))
 				_p ("  endif")
 			end
 		end
@@ -94,7 +94,7 @@ premake.gradle.generate_project_android_mk = function (prj)
 	for _, file in ipairs (prj.files) do
 		if (path.iscfile (file) or path.iscppfile (file)) then
 			if not table.icontains (prj.excludes, file) then
-				_p (string.format ("LOCAL_SRC_FILES += $(LOCAL_PATH)/%s", processpath (file)))
+				_p ("LOCAL_SRC_FILES += $(LOCAL_PATH)/%s", processpath (file))
 			end
 		end
 	end
