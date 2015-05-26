@@ -8,6 +8,10 @@ solution "example_app"
 
 		premake.gradle.appabi = {"armeabi", "armeabi-v7a", "x86"}
 		
+		premake.gradle.ndk.ld_gold.enable = true
+		
+		premake.gradle.ndk.ld_gold.multithread = true
+		
 		premake.gradle.manifest = path.join (PROJECT_DIR, "android/AndroidManifest.xml")
 		
 		premake.gradle.java_srcdirs = {

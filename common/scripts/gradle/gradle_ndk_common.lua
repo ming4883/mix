@@ -3,6 +3,9 @@ premake.gradle.ndk = {}
 premake.gradle.ndk.appabiextra = {}
 premake.gradle.ndk.appstl = "gnustl_shared"
 premake.gradle.ndk.appplatform = "android-12"
+premake.gradle.ndk.ld_gold = {}
+premake.gradle.ndk.ld_gold.enable = false
+premake.gradle.ndk.ld_gold.multithread = false
 
 -- Set extra lines for specific ABIs of the current project's Android.mk
 -- Example:
