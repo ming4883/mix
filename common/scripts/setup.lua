@@ -1,5 +1,4 @@
 dofile ("gradle/_gradle.lua")
-dofile ("xcode/_xcode.lua")
 
 BGFX_DIR = path.getabsolute ("../../vendor/bgfx/")
 BX_DIR =  path.getabsolute ("../../vendor/bx/")

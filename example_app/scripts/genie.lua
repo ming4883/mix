@@ -75,4 +75,6 @@ solution "example_app"
 			"bgfx-static",
 		}
 		
+	startproject ("example_app")
+		
 	--defines ({"TEST_COMMON=1", "TEST_APP=1"})
