@@ -63,6 +63,12 @@ solution "example_app"
 			}
 		end
 		
+		if mix_is_windows_desktop() then
+			files {
+				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_windows_desktop.cpp")
+			}
+		end
+		
 		if mix_is_ios() then
 			files {
 				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_ios.mm"),

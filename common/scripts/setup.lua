@@ -14,20 +14,19 @@ if not toolchain ("", path.join(BGFX_DIR, "3rdparty")) then
 	return -- no action specified
 end
 
--- output location
-local buildpath = path.join(path.getabsolute ("../../.build"), solution().name, _ACTION)
-location (buildpath)
-targetdir (buildpath)
-
+-- mix functions
 function mix_is_android()
 	return _ACTION == "gradle"
+end
+
+function mix_is_windows_desktop()
+	return _ACTION == "vs2013"
 end
 
 function mix_is_ios()
 	return string.find (_ACTION, "xcode") ~= nil and "ios" == _OPTIONS["xcode"]
 end
 
--- mix functions
 function mix_setup_project ()
 	local prj = project()
 	
@@ -86,7 +85,24 @@ function mix_setup_app ()
 			"-framework QuartzCore",
 		}
 	end
+	
+	if mix_is_windows_desktop() then
+		links {
+			"gdi32",
+			"psapi",
+		}
+	end
 end
+
+-- output location
+local outpath = path.join(path.getabsolute ("../../build"), solution().name, _ACTION)
+
+if mix_is_ios() then
+	outpath = outpath .. "_ios"
+end
+
+location (outpath)
+targetdir (outpath)
 
 -- bgfx library
 dofile (path.join (BGFX_DIR, "scripts/bgfx.lua"))

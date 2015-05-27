@@ -5,39 +5,49 @@
 
 #include <Windows.h>
 
-#inclue <memory>
+#include <memory>
 
 namespace mix
 {
-	extern std::owned_ptr<Application> theApp;
+	extern std::unique_ptr<Application> theApp;
 	extern int theMainSurfaceWidth;
 	extern int theMainSurfaceHeight;
 	
 } // namespace mix
 
-
-
-#define WNDCLASSNAME "eglWindow"
-
-LRESULT WINAPI windowMsgProc (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+void logI (const char* msg)
 {
-    switch (msg)
-    {
-        case WM_CLOSE: {
-            PostQuitMessage (0);
-            break;
-        }
-    }
+    printf ("%s\n", msg);
+}
 
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+template<typename... Args>
+void logI (const char* fmt, Args&&... args)
+{
+    printf (fmt, args...);
 }
 
 
-class Frontend
+#define WNDCLASSNAME "mixWindow"
+
+class Window
 {
 public:
     HWND window;
     HDC display;
+	
+	static LRESULT WINAPI windowMsgProc (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msg)
+		{
+			case WM_CLOSE: {
+				PostQuitMessage (0);
+				break;
+			}
+		}
+
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+
 
     bool init (const char* name, int w, int h)
     {
@@ -66,10 +76,10 @@ public:
         if (!RegisterClassExA (&wndCls))
             return false;
 
-        windowWidth = w;
+        windowWidth  = w;
         windowHeight = h;
-        SetRect( &rect, 0, 0, windowWidth, windowHeight );
-        AdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
+        SetRect (&rect, 0, 0, windowWidth, windowHeight);
+        AdjustWindowRectEx (&rect, dwStyle, FALSE, dwExStyle);
     
         windowWidth = rect.right - rect.left;
         windowHeight = rect.bottom - rect.top;
@@ -87,7 +97,7 @@ public:
         return true;
     }
 
-    bool step ()
+    bool update ()
     {
         MSG msg = {0};
 
@@ -100,7 +110,7 @@ public:
         return msg.message != WM_QUIT;
     }
 
-    void final ()
+    void shutdown ()
     {
         ReleaseDC (window, display);
         DestroyWindow (window);
@@ -108,50 +118,74 @@ public:
     }
 };
 
-// JNI native method
-extern "C" {
+int main (int argc, const char** argv)
+{
+	Window window;
 	
-	JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
-	{
-		logI ("%d, %d", surfaceWidth, surfaceHeight);
+	int surfaceWidth = 800;
+	int surfaceHeight = 450;
+	window.init ("mixApp", surfaceWidth, surfaceHeight);
+	
+	mix::theMainSurfaceWidth  = (int)surfaceWidth;
+	mix::theMainSurfaceHeight = (int)surfaceHeight;
+	
+	logI ("%d, %d", surfaceWidth, surfaceHeight);
 
-		bgfx::PlatformData pd;
-		pd.ndt				= NULL;
-		pd.nwh    			= NULL;
-		pd.context      	= eglGetCurrentContext();
-		pd.backBuffer   	= NULL;
-		pd.backBufferDS 	= NULL;
-		bgfx::setPlatformData (pd);
+	bgfx::PlatformData pd;
+	pd.ndt				= NULL;
+	pd.nwh    			= window.window;
+	pd.context      	= NULL;
+	pd.backBuffer   	= NULL;
+	pd.backBufferDS 	= NULL;
+	bgfx::setPlatformData (pd);
 
-		logI ("bgfx::renderFrame");
-		bgfx::renderFrame();
+	logI ("bgfx::renderFrame");
+	bgfx::renderFrame();
 
-		logI ("bgfx::init");
-		bgfx::init();
+	logI ("bgfx::init");
+	bgfx::init();
 
-		logI ("bgfx::reset");
-		bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
+	logI ("bgfx::reset");
+	bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
 
-		mix::Result ret = mix::theApp.init();
-		if (!ret) {
-			logI ("mix::theApp.init() failed: %s", ret.why());
-		}
+    if (!mix::theApp)
+    {
+        logI ("mix::theApp is nullptr!");
+        return -1;
+    }
+
+	mix::Result ret = mix::theApp->init();
+	if (ret.isFail()) {
+		logI ("mix::theApp.init() failed: %s", ret.why());
 	}
 	
-	JNIMETHOD (void, handleUpdate) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
+	while (window.update())
 	{
-		theMainSurfaceWidth = (int)surfaceWidth;
-		theMainSurfaceHeight = (int)surfaceHeight;
-		
-		mix::theApp.update();
+		mix::theApp->update();
 	}
 	
-	JNIMETHOD (void, handleQuit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
-	{
-		mix::theApp.shutdown();
-		mix::theApp.reset();
-		
-		logI ("bgfx::shutdown");
-		bgfx::shutdown();
-	}
+	mix::theApp->shutdown();
+	mix::theApp.reset();
+	
+	logI ("bgfx::shutdown");
+	bgfx::shutdown();
+	
+	window.shutdown();
+	
+	return 0;
 }
+
+//#if defined (_WINDOWS)
+
+int CALLBACK WinMain(
+	HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPSTR     lpCmdLine,
+	int       nCmdShow
+)
+{
+	return main (0, nullptr);
+}
+
+//#endif // defined (_WINDOWS)
+
