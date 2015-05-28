@@ -138,6 +138,12 @@ void logI (const char* fmt, Args&&... args)
     float scaleFactor = [[UIScreen mainScreen] scale]; // should use this, but ui is too small on ipad retina
     //float scaleFactor = 1.0f;
     [m_view setContentScaleFactor: scaleFactor];
+
+    if (!mix::theApp())
+    {
+        logI ("no mix::Application was created!");
+        return NO;
+    }
 	
     bgfx::PlatformData pd;
     pd.ndt				= NULL;
@@ -154,15 +160,9 @@ void logI (const char* fmt, Args&&... args)
     bgfx::init();
 
     logI ("bgfx::reset");
-    bgfx::reset (mix::theMainSurfaceWidth, mix::theMainSurfaceHeight, BGFX_RESET_NONE);
+    mix::theApp()->setBackbufferSize ((int)(scaleFactor * rect.size.width), (int)(scaleFactor * rect.size.height));
 
-    if (!mix::theApp())
-    {
-        logI ("no mix::Application was created!");
-        return NO;
-    }
-	
-	mix::theApp()->setBackbufferSize ((int)(scaleFactor * rect.size.width), (int)(scaleFactor * rect.size.height));
+    bgfx::reset (mix::theApp()->getBackbufferWidth(), mix::theApp()->getBackbufferHeight(), BGFX_RESET_NONE);
 
     mix::Result ret = mix::theApp()->init();
     if (ret.isFail()) {
