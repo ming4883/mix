@@ -131,4 +131,10 @@ project ("bgfx-static")
 		}
 	end
 	
+	if mix_is_windows_desktop() then
+		defines {
+			"BGFX_CONFIG_RENDERER_DIRECT3D11=1"
+		}
+	end
+	
 	mix_setup_project()

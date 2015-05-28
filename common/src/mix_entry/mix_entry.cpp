@@ -1,7 +1,5 @@
 #include <mix_entry/mix_entry.h>
 
-#include <memory>
-
 namespace mix
 {
 	void TimeSource::reset()
@@ -55,35 +53,45 @@ namespace mix
 		return m_why;
 	}
 	
-	
-	std::unique_ptr<Application> theApp;
-	int theMainSurfaceWidth;
-	int theMainSurfaceHeight;
-	
-	Result Application::setInstance (Application* instance)
-	{
-		if (theApp)
-		{
-			return Result::fail ("Application instance already exists!");
-		}
-		
-		theApp.reset (instance);
-		
-		return Result::ok();
-	}
+    Application* Application::ms_inst = nullptr;
+
+    Result Application::cleanup ()
+    {
+        if (!ms_inst)
+        {
+            return Result::fail ("Application instance not exists!");
+        }
+
+        delete ms_inst;
+        ms_inst = nullptr;
+        return Result::ok();
+    }
+
+    Application* Application::get()
+    {
+        return ms_inst;
+    }
 	
 	Application::Application()
 	{
-		
+        m_backbufferWidth = 0;
+        m_backbufferHeight = 0;
+		ms_inst = this;
+	}
+
+    void Application::setBackbufferSize (int w, int h)
+    {
+        m_backbufferWidth  = w;
+        m_backbufferHeight = h;
+    }
+	
+	int Application::getBackbufferWidth()
+	{
+		return m_backbufferWidth;
 	}
 	
-	int Application::mainSurfaceWidth()
+	int Application::getBackbufferHeight()
 	{
-		return theMainSurfaceWidth;
-	}
-	
-	int Application::mainSurfaceHeight()
-	{
-		return theMainSurfaceHeight;
+		return m_backbufferHeight;
 	}
 }

@@ -3,7 +3,7 @@
 
 #include <bx/platform.h>
 #include <bx/timer.h>
-
+#include <memory>
 namespace mix
 {
 
@@ -39,6 +39,12 @@ private:
 
 class Application
 {
+
+public:
+	static Result cleanup();
+
+    static Application* get();
+
 public:
 	//! Invoked when application startup
 	virtual Result init() = 0;
@@ -49,19 +55,27 @@ public:
 	//! Invoked once per frame
 	virtual void update() = 0;
 	
-	static Result setInstance (Application* instance);
-	
 public:
 	TimeSource appTime;
 
 	Application();
+
+    void setBackbufferSize (int w, int h);
 	
 	//! Return the width of the main surface
-	int mainSurfaceWidth();
+	int getBackbufferWidth();
 	
 	//! Return the height of the main surface
-	int mainSurfaceHeight();
+	int getBackbufferHeight();
+
+private:
+    static Application* ms_inst;
+
+    int m_backbufferWidth, m_backbufferHeight;
 };
+
+template<class APP = Application>
+inline APP* theApp() { return static_cast<APP*> (Application::get()); }
 	
 } // namespace mix
 

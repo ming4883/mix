@@ -8,14 +8,6 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CAEAGLLayer.h>
 
-namespace mix
-{
-	extern std::unique_ptr<Application> theApp;
-	extern int theMainSurfaceWidth;
-	extern int theMainSurfaceHeight;
-	
-} // namespace mix
-
 void logI (const char* msg)
 {
     printf ("%s\n", msg);
@@ -76,9 +68,9 @@ void logI (const char* fmt, Args&&... args)
 
 - (void)renderFrame
 {
-    if (mix::theApp)
+    if (mix::theApp())
     {
-        mix::theApp->update();
+        mix::theApp()->update();
     }
 }
 
@@ -146,10 +138,7 @@ void logI (const char* fmt, Args&&... args)
     float scaleFactor = [[UIScreen mainScreen] scale]; // should use this, but ui is too small on ipad retina
     //float scaleFactor = 1.0f;
     [m_view setContentScaleFactor: scaleFactor];
-
-    mix::theMainSurfaceWidth = (int)(scaleFactor * rect.size.width);
-    mix::theMainSurfaceHeight = (int)(scaleFactor * rect.size.height);
-
+	
     bgfx::PlatformData pd;
     pd.ndt				= NULL;
     pd.nwh    			= m_view.layer;
@@ -167,15 +156,17 @@ void logI (const char* fmt, Args&&... args)
     logI ("bgfx::reset");
     bgfx::reset (mix::theMainSurfaceWidth, mix::theMainSurfaceHeight, BGFX_RESET_NONE);
 
-    if (!mix::theApp)
+    if (!mix::theApp())
     {
-        logI ("mix::theApp is nullptr!");
+        logI ("no mix::Application was created!");
         return NO;
     }
+	
+	mix::theApp()->setBackbufferSize ((int)(scaleFactor * rect.size.width), (int)(scaleFactor * rect.size.height));
 
-    mix::Result ret = mix::theApp->init();
+    mix::Result ret = mix::theApp()->init();
     if (ret.isFail()) {
-        logI ("mix::theApp.init() failed: %s", ret.why());
+        logI ("mix::theApp().init() failed: %s", ret.why());
     }
 
     return YES;
@@ -208,12 +199,11 @@ void logI (const char* fmt, Args&&... args)
     BX_UNUSED(application);
     [m_view stop];
 
-    if (mix::theApp)
+    if (mix::theApp())
     {
-        mix::theApp->shutdown();
+        mix::theApp()->shutdown();
+		mix::Application::cleanup();
     }
-
-    mix::theApp.reset();
 
     logI ("bgfx::shutdown");
     bgfx::shutdown();

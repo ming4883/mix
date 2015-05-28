@@ -11,8 +11,12 @@ namespace example
 		TheApplication()
 			: m_state (0)
 		{
-			mix::Application::setInstance (this);
 		}
+
+        ~TheApplication()
+        {
+            m_state = 0;
+        }
 		
 		mix::Result init() override
 		{
@@ -28,7 +32,7 @@ namespace example
 		
 		void update() override
 		{
-			bgfx::setViewRect (0, 0, 0, mainSurfaceWidth(), mainSurfaceHeight());
+			bgfx::setViewRect (0, 0, 0, getBackbufferWidth(), getBackbufferHeight());
 			
 			bgfx::setViewClear (0
 				, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH

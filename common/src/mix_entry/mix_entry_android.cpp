@@ -10,14 +10,6 @@
 
 #include <memory>
 
-namespace mix
-{
-	extern std::unique_ptr<Application> theApp;
-	extern int theMainSurfaceWidth;
-	extern int theMainSurfaceHeight;
-	
-} // namespace mix
-
 void logI (const char* msg)
 {
 	__android_log_print (ANDROID_LOG_INFO, "bgfx", "%s", msg);
@@ -55,13 +47,14 @@ extern "C" {
 		logI ("bgfx::reset");
 		bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
 		
-		if (!mix::theApp)
+		if (!mix::theApp())
 		{
-			logI ("mix::theApp is nullptr!");
+			logI ("no mix::Application was created!");
 			return;
 		}
 
-		mix::Result ret = mix::theApp->init();
+		mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
+		mix::Result ret = mix::theApp()->init();
 		if (ret.isFail()) {
 			logI ("mix::theApp.init() failed: %s", ret.why());
 		}
@@ -69,23 +62,20 @@ extern "C" {
 	
 	JNIMETHOD (void, handleUpdate) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
-		mix::theMainSurfaceWidth = (int)surfaceWidth;
-		mix::theMainSurfaceHeight = (int)surfaceHeight;
-		
-		if (mix::theApp)
+		if (mix::theApp())
 		{
-			mix::theApp->update();
+			mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
+			mix::theApp()->update();
 		}
 	}
 	
 	JNIMETHOD (void, handleQuit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
-		if (mix::theApp)
+		if (mix::theApp())
 		{
-			mix::theApp->shutdown();
+			mix::theApp()->shutdown();
+			mix::Application::cleanup();
 		}
-		
-		mix::theApp.reset();
 		
 		logI ("bgfx::shutdown");
 		bgfx::shutdown();

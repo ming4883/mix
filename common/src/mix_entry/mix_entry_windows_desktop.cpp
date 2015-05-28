@@ -4,16 +4,7 @@
 #include <bgfxplatform.h>
 
 #include <Windows.h>
-
-#include <memory>
-
-namespace mix
-{
-	extern std::unique_ptr<Application> theApp;
-	extern int theMainSurfaceWidth;
-	extern int theMainSurfaceHeight;
-	
-} // namespace mix
+#include <stdio.h>
 
 void logI (const char* msg)
 {
@@ -120,16 +111,21 @@ public:
 
 int main (int argc, const char** argv)
 {
+    
+    if (!mix::Application::get())
+    {
+        logI ("mix::theApp is nullptr!");
+        return -1;
+    }
+
 	Window window;
 	
-	int surfaceWidth = 800;
-	int surfaceHeight = 450;
+	int surfaceWidth  = mix::theApp()->getBackbufferWidth()  == 0 ? 800 : mix::theApp()->getBackbufferWidth();
+	int surfaceHeight = mix::theApp()->getBackbufferHeight() == 0 ? 450 : mix::theApp()->getBackbufferHeight();
 	window.init ("mixApp", surfaceWidth, surfaceHeight);
 	
-	mix::theMainSurfaceWidth  = (int)surfaceWidth;
-	mix::theMainSurfaceHeight = (int)surfaceHeight;
-	
 	logI ("%d, %d", surfaceWidth, surfaceHeight);
+    mix::theApp()->setBackbufferSize (surfaceWidth, surfaceHeight);
 
 	bgfx::PlatformData pd;
 	pd.ndt				= NULL;
@@ -139,8 +135,8 @@ int main (int argc, const char** argv)
 	pd.backBufferDS 	= NULL;
 	bgfx::setPlatformData (pd);
 
-	logI ("bgfx::renderFrame");
-	bgfx::renderFrame();
+	//logI ("bgfx::renderFrame");
+	//bgfx::renderFrame();
 
 	logI ("bgfx::init");
 	bgfx::init();
@@ -148,24 +144,18 @@ int main (int argc, const char** argv)
 	logI ("bgfx::reset");
 	bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
 
-    if (!mix::theApp)
-    {
-        logI ("mix::theApp is nullptr!");
-        return -1;
-    }
-
-	mix::Result ret = mix::theApp->init();
+	mix::Result ret = mix::theApp()->init();
 	if (ret.isFail()) {
-		logI ("mix::theApp.init() failed: %s", ret.why());
+		logI ("mix::theApp()->init() failed: %s", ret.why());
 	}
 	
 	while (window.update())
 	{
-		mix::theApp->update();
+		mix::theApp()->update();
 	}
 	
-	mix::theApp->shutdown();
-	mix::theApp.reset();
+	mix::theApp()->shutdown();
+	mix::Application::cleanup();
 	
 	logI ("bgfx::shutdown");
 	bgfx::shutdown();
@@ -175,17 +165,4 @@ int main (int argc, const char** argv)
 	return 0;
 }
 
-//#if defined (_WINDOWS)
-
-int CALLBACK WinMain(
-	HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR     lpCmdLine,
-	int       nCmdShow
-)
-{
-	return main (0, nullptr);
-}
-
-//#endif // defined (_WINDOWS)
 
