@@ -27,6 +27,17 @@ function mix_is_ios()
 	return string.find (_ACTION, "xcode") ~= nil and "ios" == _OPTIONS["xcode"]
 end
 
+
+-- output location
+local OUTPATH = path.join(path.getabsolute ("../../build"), solution().name, _ACTION)
+
+if mix_is_ios() then
+	OUTPATH = OUTPATH .. "_ios"
+end
+
+location (OUTPATH)
+targetdir (path.join (path.getrelative (path.getabsolute ("."), OUTPATH), "out"))
+
 function mix_setup_project ()
 	local prj = project()
 	
@@ -58,18 +69,18 @@ function mix_setup_project ()
 end
 
 function mix_setup_staticlib ()
-	mix_setup_project()
 	kind ("StaticLib")
+	mix_setup_project()
 end
 		
 function mix_setup_sharedlib ()
-	mix_setup_project()
 	kind ("SharedLib")
+	mix_setup_project()
 end
 		
 function mix_setup_app ()
-	mix_setup_project()
 	kind ("WindowedApp")
+	mix_setup_project()
 	
 	includedirs {
 		path.join (BX_DIR, "include"),
@@ -93,16 +104,6 @@ function mix_setup_app ()
 		}
 	end
 end
-
--- output location
-local outpath = path.join(path.getabsolute ("../../build"), solution().name, _ACTION)
-
-if mix_is_ios() then
-	outpath = outpath .. "_ios"
-end
-
-location (outpath)
-targetdir (outpath)
 
 -- bgfx library
 dofile (path.join (BGFX_DIR, "scripts/bgfx.lua"))
