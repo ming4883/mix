@@ -144,17 +144,25 @@ int main (int argc, const char** argv)
 	logI ("bgfx::reset");
 	bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
 
+	mix::theApp()->preInit();
 	mix::Result ret = mix::theApp()->init();
 	if (ret.isFail()) {
 		logI ("mix::theApp()->init() failed: %s", ret.why());
+		return 0;
 	}
+	mix::theApp()->postInit();
 	
 	while (window.update())
 	{
+		mix::theApp()->preUpdate();
 		mix::theApp()->update();
+		mix::theApp()->postUpdate();
 	}
 	
+	mix::theApp()->preShutdown();
 	mix::theApp()->shutdown();
+	mix::theApp()->postShutdown();
+	
 	mix::Application::cleanup();
 	
 	logI ("bgfx::shutdown");

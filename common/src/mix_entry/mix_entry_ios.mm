@@ -70,7 +70,9 @@ void logI (const char* fmt, Args&&... args)
 {
     if (mix::theApp())
     {
+        mix::theApp()->preUpdate();
         mix::theApp()->update();
+        mix::theApp()->postUpdate();
     }
 }
 
@@ -164,10 +166,14 @@ void logI (const char* fmt, Args&&... args)
 
     bgfx::reset (mix::theApp()->getBackbufferWidth(), mix::theApp()->getBackbufferHeight(), BGFX_RESET_NONE);
 
+    mix::theApp()->preInit();
+
     mix::Result ret = mix::theApp()->init();
     if (ret.isFail()) {
         logI ("mix::theApp().init() failed: %s", ret.why());
     }
+
+    mix::theApp()->postInit();
 
     return YES;
 }
@@ -201,7 +207,9 @@ void logI (const char* fmt, Args&&... args)
 
     if (mix::theApp())
     {
+        mix::theApp()->preShutdown();
         mix::theApp()->shutdown();
+        mix::theApp()->postShutdown();
 		mix::Application::cleanup();
     }
 

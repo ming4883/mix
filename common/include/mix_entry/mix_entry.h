@@ -11,12 +11,16 @@ class TimeSource
 {
 public:
 	void reset();
+    void nextFrame();
 	float totalTimeInMS() const;
 	float frameTimeInMS() const;
 	float frameTimeSmoothedInMS() const;
 	
 private:
-	int64_t m_last;
+    int64_t m_offset;
+    int64_t m_last;
+    int64_t m_now;
+    double m_toMS;
 };
 
 class Result
@@ -56,9 +60,8 @@ public:
 	virtual void update() = 0;
 	
 public:
-	TimeSource appTime;
-
-	Application();
+    Application();
+    virtual ~Application();
 
     void setBackbufferSize (int w, int h);
 	
@@ -68,9 +71,32 @@ public:
 	//! Return the height of the main surface
 	int getBackbufferHeight();
 
+    //! Return the TimeSource
+    const TimeSource& getTimeSource() const { return m_timeSource; }
+
+public:
+    //! Perform common tasks before Application::init()
+    void preInit();
+
+    //! Perform common tasks after Application::init()
+    void postInit();
+
+    //! Perform common tasks before Application::update()
+    void preUpdate();
+
+    //! Perform common tasks after Application::update()
+    void postUpdate();
+
+    //! Perform common tasks before Application::shutdown()
+    void preShutdown();
+
+    //! Perform common tasks after Application::shutdown()
+    void postShutdown();
+
 private:
     static Application* ms_inst;
 
+    TimeSource m_timeSource;
     int m_backbufferWidth, m_backbufferHeight;
 };
 

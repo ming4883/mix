@@ -54,10 +54,13 @@ extern "C" {
 		}
 
 		mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
+		mix::theApp()->preInit();
 		mix::Result ret = mix::theApp()->init();
 		if (ret.isFail()) {
 			logI ("mix::theApp.init() failed: %s", ret.why());
 		}
+		
+		mix::theApp()->postInit();
 	}
 	
 	JNIMETHOD (void, handleUpdate) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
@@ -65,7 +68,9 @@ extern "C" {
 		if (mix::theApp())
 		{
 			mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
+			mix::theApp()->preUpdate();
 			mix::theApp()->update();
+			mix::theApp()->postUpdate();
 		}
 	}
 	
@@ -73,8 +78,10 @@ extern "C" {
 	{
 		if (mix::theApp())
 		{
+			mix::theApp()->preShutdown();
 			mix::theApp()->shutdown();
 			mix::Application::cleanup();
+			mix::theApp()->postShutdown();
 		}
 		
 		logI ("bgfx::shutdown");
