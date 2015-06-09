@@ -54,7 +54,10 @@ solution "example_app"
 	
 		files {
 			path.join (PROJECT_DIR, "src/app.cpp"),
-			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry.cpp")
+			path.join (MIX_COMMON_DIR, "include/mix_entry/*.h"),
+			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry.cpp"),
+			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_event.cpp"),
+			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_result.cpp"),
 		}
 		
 		if mix_is_android() then

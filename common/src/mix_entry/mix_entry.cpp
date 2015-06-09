@@ -31,38 +31,7 @@ namespace mix
 	{
 		return frameTimeInMS();
 	}
-	
-	Result Result::ok ()
-	{
-		return Result (true);
-	}
-	
-	Result Result::fail (const char* _why)
-	{
-		return Result (false, _why);
-	}
-	
-	Result::Result (bool _ok, const char* _why)
-		: m_ok (_ok)
-		, m_why (_why)
-	{
-	}
-	
-	bool Result::isOK() const
-	{
-		return m_ok == true;
-	}
-	
-	bool Result::isFail() const
-	{
-		return m_ok == false;
-	}
-	
-	const char* Result::why() const
-	{
-		return m_why;
-	}
-	
+		
     Application* Application::ms_inst = nullptr;
 
     Result Application::cleanup ()
@@ -119,10 +88,10 @@ namespace mix
     {
     }
 
-    void Application::setBackbufferSize (int w, int h)
+    void Application::setBackbufferSize (int _w, int _h)
     {
-        m_backbufferWidth  = w;
-        m_backbufferHeight = h;
+        m_backbufferWidth  = _w;
+        m_backbufferHeight = _h;
     }
 	
 	int Application::getBackbufferWidth()

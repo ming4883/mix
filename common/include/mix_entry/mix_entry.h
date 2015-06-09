@@ -4,6 +4,9 @@
 #include <bx/platform.h>
 #include <bx/timer.h>
 #include <memory>
+
+#include <mix_entry/mix_result.h>
+
 namespace mix
 {
 
@@ -21,24 +24,6 @@ private:
     int64_t m_last;
     int64_t m_now;
     double m_toMS;
-};
-
-class Result
-{
-public:
-	static Result ok ();
-	static Result fail (const char* _why);
-	
-	Result (bool _ok, const char* _why = nullptr);
-	
-	bool isOK() const;
-	bool isFail() const;
-	
-	const char* why() const;
-	
-private:
-	bool m_ok;
-	const char* m_why;
 };
 
 class Application
@@ -63,7 +48,7 @@ public:
     Application();
     virtual ~Application();
 
-    void setBackbufferSize (int w, int h);
+    void setBackbufferSize (int _w, int _h);
 	
 	//! Return the width of the main surface
 	int getBackbufferWidth();
