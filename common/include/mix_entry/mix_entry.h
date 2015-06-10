@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <mix_entry/mix_result.h>
+#include <mix_entry/mix_event.h>
 
 namespace mix
 {
@@ -59,6 +60,9 @@ public:
     //! Return the TimeSource
     const TimeSource& getTimeSource() const { return m_timeSource; }
 
+    //! Return the EventQueue for application wise evnet publishing
+    EventQueue& getEventQueue() { return m_eventQueue; }
+
 public:
     //! Perform common tasks before Application::init()
     void preInit();
@@ -82,6 +86,7 @@ private:
     static Application* ms_inst;
 
     TimeSource m_timeSource;
+    EventQueue m_eventQueue;
     int m_backbufferWidth, m_backbufferHeight;
 };
 

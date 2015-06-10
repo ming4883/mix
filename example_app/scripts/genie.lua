@@ -55,29 +55,24 @@ solution "example_app"
 		files {
 			path.join (PROJECT_DIR, "src/app.cpp"),
 			path.join (MIX_COMMON_DIR, "include/mix_entry/*.h"),
-			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry.cpp"),
-			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_event.cpp"),
-			path.join (MIX_COMMON_DIR, "src/mix_entry/mix_result.cpp"),
+			path.join (MIX_COMMON_DIR, "src/mix_entry/*.cpp"),
+			path.join (MIX_COMMON_DIR, "src/mix_entry/*.mm"),
 		}
 		
 		if mix_is_android() then
-			files {
-				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_android.cpp")
-			}
+			defines { "MIX_ANDROID" }
 		end
 		
 		if mix_is_windows_desktop() then
-			files {
-				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_windows_desktop.cpp")
-			}
+			defines { "MIX_WINDOWS_DESKTOP" }
 		end
 		
 		if mix_is_ios() then
 			files {
-				path.join (MIX_COMMON_DIR, "src/mix_entry/mix_entry_ios.mm"),
 				path.join (PROJECT_DIR, "ios/info.plist"),
 				path.join (PROJECT_DIR, "ios/LaunchScreen.xib"),
 			}
+			defines { "MIX_IOS" }
 		end
 		
 		includedirs {

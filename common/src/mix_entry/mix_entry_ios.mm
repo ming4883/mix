@@ -1,3 +1,5 @@
+#if defined (MIX_IOS)
+
 #include <mix_entry/mix_entry.h>
 
 #include <bgfx.h>
@@ -234,3 +236,5 @@ int main(int _argc, char* _argv[])
     [pool release];
     return exitCode;
 }
+
+#endif // #if defined (MIX_IOS)

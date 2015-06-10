@@ -1,3 +1,5 @@
+#if defined (MIX_ANDROID)
+
 #include <mix_entry/mix_entry.h>
 
 #include <bgfx.h>
@@ -88,3 +90,5 @@ extern "C" {
 		bgfx::shutdown();
 	}
 }
+
+#endif // #if defined (MIX_ANDROID)

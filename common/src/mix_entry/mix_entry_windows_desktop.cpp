@@ -1,3 +1,5 @@
+#if defined (MIX_WINDOWS_DESKTOP)
+
 #include <mix_entry/mix_entry.h>
 
 #include <bgfx.h>
@@ -173,4 +175,4 @@ int main (int argc, const char** argv)
 	return 0;
 }
 
-
+#endif // #if defined (MIX_WINDOWS_DESKTOP)
