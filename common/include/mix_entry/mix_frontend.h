@@ -2,11 +2,12 @@
 #define MIX_FRONTEND_H
 
 #include <mix_entry/mix_event.h>
+#include <bx/float4_t.h>
 
 namespace mix
 {
 
-namespace FrontentEventType
+namespace FrontendEventType
 {
     enum Enum
     {
@@ -16,7 +17,7 @@ namespace FrontentEventType
         TouchMove,
         TouchUp,
     };
-}
+} // namespace FrontendEventType
 
 class FrontendEvent : public Event
 {
@@ -25,10 +26,21 @@ public:
     static void finalize (Event* _event);
 
 public:
-    FrontentEventType::Enum type;
-    float params[4];
+    FrontendEventType::Enum type;
+    
+    union
+    {
+        struct
+        {
+            float x, y;
+        } location;
+        struct
+        {
+            int w, h;
+        } size;
+    } params;
 
-    FrontendEvent (FrontentEventType::Enum _type);
+    FrontendEvent (FrontendEventType::Enum _type);
 };
 
 	

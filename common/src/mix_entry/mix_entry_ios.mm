@@ -1,6 +1,6 @@
 #if defined (MIX_IOS)
 
-#include <mix_entry/mix_entry.h>
+#include <mix_entry/mix_application.h>
 
 #include <bgfx.h>
 #include <bgfxplatform.h>

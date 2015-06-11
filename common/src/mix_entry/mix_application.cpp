@@ -1,37 +1,26 @@
-#include <mix_entry/mix_entry.h>
+#include <mix_entry/mix_application.h>
 
 namespace mix
 {
-	void TimeSource::reset()
-	{
-        m_offset = bx::getHPCounter();
-		m_last = m_offset;
-        m_now = m_offset;
-
-        m_toMS = 1000.0 / bx::getHPFrequency();
-	}
-
-    void TimeSource::nextFrame()
+    EventTypeId ApplicationEvent::getEventTypeId()
     {
-        m_last = m_now;
-        m_now = bx::getHPCounter();
+        return EventTypeId ("ApplicationEvent");
     }
-	
-	float TimeSource::totalTimeInMS() const
-	{
-        return (float)((m_now - m_offset) * m_toMS);
-	}
-	
-	float TimeSource::frameTimeInMS() const
-	{
-		return (float)((m_now - m_last) * m_toMS);
-	}
-	
-	float TimeSource::frameTimeSmoothedInMS() const
-	{
-		return frameTimeInMS();
-	}
-		
+
+    void ApplicationEvent::finalize (Event* _event)
+    {
+        if (_event->is<ApplicationEvent>())
+        {
+            delete _event;
+        }
+    }
+
+    ApplicationEvent::ApplicationEvent (ApplicationEventType::Enum _type)
+        : Event (getEventTypeId(), finalize)
+        , type (_type)
+    {
+    }
+
     Application* Application::ms_inst = nullptr;
 
     Result Application::cleanup ()

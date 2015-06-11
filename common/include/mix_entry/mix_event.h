@@ -21,10 +21,19 @@ public:
     EventTypeId typeId;
 
     Event (EventTypeId _typeId, EventFinalizer _finalizer);
+    virtual ~Event();
+
+    template<typename T>
+    bool is() const
+    {
+        return typeId == T::getEventTypeId();
+    }
 
 protected:
     EventFinalizer m_finalizer;
     Event* m_next;
+
+    friend class EventQueue;
 
 };
 
@@ -49,6 +58,7 @@ public:
 
 private:
     Event* m_head;
+    Event* m_tail;
 
     mutable bx::Mutex m_mutex;
 };

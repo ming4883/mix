@@ -1,30 +1,38 @@
-#ifndef MIX_ENTRY_H
-#define MIX_ENTRY_H
+#ifndef MIX_APPLICATION_H
+#define MIX_APPLICATION_H
 
 #include <bx/platform.h>
-#include <bx/timer.h>
-#include <memory>
 
 #include <mix_entry/mix_result.h>
 #include <mix_entry/mix_event.h>
+#include <mix_entry/mix_time.h>
 
 namespace mix
 {
 
-class TimeSource
+namespace ApplicationEventType
+{
+    enum Enum
+    {
+        Terminating,
+        LowMemory,
+        WillEnterBackground,
+        DidEnterBackground,
+        WillEnterForeground,
+        DidEnterForeground,
+    };
+} // namespace ApplicationEventType
+
+class ApplicationEvent : public Event
 {
 public:
-	void reset();
-    void nextFrame();
-	float totalTimeInMS() const;
-	float frameTimeInMS() const;
-	float frameTimeSmoothedInMS() const;
-	
-private:
-    int64_t m_offset;
-    int64_t m_last;
-    int64_t m_now;
-    double m_toMS;
+    static EventTypeId getEventTypeId();
+    static void finalize (Event* _event);
+
+public:
+    ApplicationEventType::Enum type;
+    
+    ApplicationEvent (ApplicationEventType::Enum _type);
 };
 
 class Application
