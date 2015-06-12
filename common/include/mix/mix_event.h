@@ -6,8 +6,8 @@
 
 #include <functional>
 
-#include <mix_entry/mix_result.h>
-#include <mix_entry/mix_hash_fnv.h>
+#include <mix/mix_result.h>
+#include <mix/mix_hash_fnv.h>
 
 namespace mix
 {
@@ -18,23 +18,34 @@ typedef std::function<void (class Event*)> EventFinalizer;
 class Event
 {
 public:
-    EventTypeId typeId;
+    static void finalize (Event* _event);
+
+    const EventTypeId typeId;
 
     Event (EventTypeId _typeId, EventFinalizer _finalizer);
-    virtual ~Event();
-
+    
     template<typename T>
     bool is() const
     {
         return typeId == T::getEventTypeId();
     }
 
+    template<typename T>
+    const T* cast() const
+    {
+        if (typeId != T::getEventTypeId())
+            return nullptr;
+
+        return static_cast<const T*> (this);
+    }
+
 protected:
+    friend class EventQueue;
+
     EventFinalizer m_finalizer;
     Event* m_next;
 
-    friend class EventQueue;
-
+    virtual ~Event();
 };
 
 class EventQueue

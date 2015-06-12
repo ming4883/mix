@@ -1,4 +1,4 @@
-#include <mix_entry/mix_application.h>
+#include <mix/mix_application.h>
 
 namespace mix
 {
@@ -11,7 +11,7 @@ namespace mix
     {
         if (_event->is<ApplicationEvent>())
         {
-            delete _event;
+            delete static_cast<ApplicationEvent*> (_event);
         }
     }
 

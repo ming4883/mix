@@ -1,10 +1,12 @@
+#if defined (MIX_ANDROID)
+
+#include <mix/mix_application.h>
+
 #include <bgfx.h>
 #include <bgfxplatform.h>
 
-
 #include <jni.h>
 #include <android/log.h>
-#include <android/native_window_jni.h>
 #include <android/native_window_jni.h>
 #include <EGL/egl.h>
 
@@ -23,14 +25,11 @@ void logI (const char* fmt, Args&&... args)
 
 // JNI native method
 extern "C" {
-
-	const int k_swapId = 0;
 	
 	JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
 		logI ("%d, %d", surfaceWidth, surfaceHeight);
 
-		
 		bgfx::PlatformData pd;
 		pd.ndt				= NULL;
 		pd.nwh    			= NULL;
@@ -39,39 +38,55 @@ extern "C" {
 		pd.backBufferDS 	= NULL;
 		bgfx::setPlatformData (pd);
 
-		logI ("renderFrame");
+		logI ("bgfx::renderFrame");
 		bgfx::renderFrame();
 
-		logI ("init");
-		bgfx::init ();
+		logI ("bgfx::init");
+		bgfx::init();
 
-		logI ("reset");
+		logI ("bgfx::reset");
 		bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
+		
+		if (!mix::theApp())
+		{
+			logI ("no mix::Application was created!");
+			return;
+		}
 
-		bgfx::setDebug (BGFX_DEBUG_TEXT|BGFX_DEBUG_STATS);
+		mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
+		mix::theApp()->preInit();
+		mix::Result ret = mix::theApp()->init();
+		if (ret.isFail()) {
+			logI ("mix::theApp.init() failed: %s", ret.why());
+		}
+		
+		mix::theApp()->postInit();
 	}
 	
 	JNIMETHOD (void, handleUpdate) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
-		static int s_state = 0;
-		bgfx::setViewRect (k_swapId, 0, 0, surfaceWidth, surfaceHeight);
-		
-		bgfx::setViewClear (k_swapId
-			, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
-			, (s_state << 24) | 0x003030ff
-			, 1.0f
-			, 0
-			);
-
-		bgfx::submit (k_swapId);
-		bgfx::frame ();
-
-		s_state = (s_state + 1) % 256;
+		if (mix::theApp())
+		{
+			mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
+			mix::theApp()->preUpdate();
+			mix::theApp()->update();
+			mix::theApp()->postUpdate();
+		}
 	}
 	
 	JNIMETHOD (void, handleQuit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
-		logI ("quit");	
-		bgfx::shutdown ();
+		if (mix::theApp())
+		{
+			mix::theApp()->preShutdown();
+			mix::theApp()->shutdown();
+			mix::Application::cleanup();
+			mix::theApp()->postShutdown();
+		}
+		
+		logI ("bgfx::shutdown");
+		bgfx::shutdown();
 	}
 }
+
+#endif // #if defined (MIX_ANDROID)

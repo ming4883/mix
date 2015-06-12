@@ -3,9 +3,9 @@
 
 #include <bx/platform.h>
 
-#include <mix_entry/mix_result.h>
-#include <mix_entry/mix_event.h>
-#include <mix_entry/mix_time.h>
+#include <mix/mix_result.h>
+#include <mix/mix_event.h>
+#include <mix/mix_time.h>
 
 namespace mix
 {

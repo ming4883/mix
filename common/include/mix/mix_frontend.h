@@ -1,7 +1,7 @@
 #ifndef MIX_FRONTEND_H
 #define MIX_FRONTEND_H
 
-#include <mix_entry/mix_event.h>
+#include <mix/mix_event.h>
 #include <bx/float4_t.h>
 
 namespace mix

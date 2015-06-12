@@ -1,4 +1,4 @@
-#include <mix_entry/mix_result.h>
+#include <mix/mix_result.h>
 
 namespace mix
 {

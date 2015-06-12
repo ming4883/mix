@@ -1,6 +1,6 @@
 #if defined (MIX_WINDOWS_DESKTOP)
 
-#include <mix_entry/mix_application.h>
+#include <mix/mix_application.h>
 
 #include <bgfx.h>
 #include <bgfxplatform.h>

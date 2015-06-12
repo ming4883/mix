@@ -1,4 +1,4 @@
-#include <mix_entry/mix_application.h>
+#include <mix/mix_application.h>
 #include <bgfx.h>
 #include <math.h>
 

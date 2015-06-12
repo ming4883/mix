@@ -105,6 +105,85 @@ function mix_setup_app ()
 	end
 end
 
+
+local COMMOM_DIR = path.getabsolute ("../")
+local GTEST_DIR = path.getabsolute ("../../vendor/gtest")
+
+function mix_setup_common_app()
+
+	mix_setup_app()
+	
+	
+	files {
+		path.join (COMMOM_DIR, "include/mix/*.h"),
+		path.join (COMMOM_DIR, "src/mix/*.cpp"),
+		path.join (COMMOM_DIR, "src/mix/*.mm"),
+	}
+	
+	excludes {
+		path.join (COMMOM_DIR, "src/mix/mix_tests*"),
+	}
+	
+	includedirs {
+		path.join (COMMOM_DIR, "include/")
+	}
+	
+	links {
+		"bgfx-static",
+	}
+	
+	if mix_is_android() then
+		defines { "MIX_ANDROID" }
+	end
+	
+	if mix_is_windows_desktop() then
+		defines { "MIX_WINDOWS_DESKTOP" }
+	end
+	
+	if mix_is_ios() then
+		defines { "MIX_IOS" }
+	end
+	
+end
+
+function mix_common_tests_project ()
+	project ("mix_common_tests")
+	kind ("WindowedApp")
+	mix_setup_project()
+	
+	includedirs {
+		path.join (BX_DIR, "include"),
+		path.join (GTEST_DIR, "fused-src"),
+		path.join (COMMOM_DIR, "include/")
+	}
+	
+	files {
+		path.join (COMMOM_DIR, "include/mix/*.h"),
+		path.join (COMMOM_DIR, "src/mix/*.cpp"),
+		path.join (COMMOM_DIR, "src/mix/*.mm"),
+		path.join (GTEST_DIR, "fused-src/gtest/gtest.h"),
+		path.join (GTEST_DIR, "fused-src/gtest/gtest-all.cc"),
+	}
+	
+	excludes {
+		path.join (COMMOM_DIR, "src/mix/mix_entry*"),
+	}
+	
+	defines { "MIX_TESTS" }
+	
+	if mix_is_android() then
+		defines { "MIX_ANDROID" }
+	end
+	
+	if mix_is_windows_desktop() then
+		defines { "MIX_WINDOWS_DESKTOP" }
+	end
+	
+	if mix_is_ios() then
+		defines { "MIX_IOS" }
+	end
+end
+
 -- bgfx library
 dofile (path.join (BGFX_DIR, "scripts/bgfx.lua"))
 

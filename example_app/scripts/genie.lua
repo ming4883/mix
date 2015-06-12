@@ -50,39 +50,21 @@ solution "example_app"
 	end
 	
 	project ("example_app")
-		mix_setup_app ()
-	
+		mix_setup_common_app ()
+		
 		files {
-			path.join (PROJECT_DIR, "src/app.cpp"),
-			path.join (MIX_COMMON_DIR, "include/mix_entry/*.h"),
-			path.join (MIX_COMMON_DIR, "src/mix_entry/*.cpp"),
-			path.join (MIX_COMMON_DIR, "src/mix_entry/*.mm"),
+			path.join (PROJECT_DIR, "src/*.cpp"),
 		}
-		
-		if mix_is_android() then
-			defines { "MIX_ANDROID" }
-		end
-		
-		if mix_is_windows_desktop() then
-			defines { "MIX_WINDOWS_DESKTOP" }
-		end
-		
+			
 		if mix_is_ios() then
 			files {
 				path.join (PROJECT_DIR, "ios/info.plist"),
 				path.join (PROJECT_DIR, "ios/LaunchScreen.xib"),
 			}
-			defines { "MIX_IOS" }
 		end
-		
-		includedirs {
-			path.join (MIX_COMMON_DIR, "include/")
-		}
-		
-		links {
-			"bgfx-static",
-		}
-		
+	
+	mix_common_tests_project()	
+	
 	startproject ("example_app")
 		
 	--defines ({"TEST_COMMON=1", "TEST_APP=1"})

@@ -1,5 +1,5 @@
-#include <mix_entry/mix_frontend.h>
-#include <mix_entry/mix_array.h>
+#include <mix/mix_frontend.h>
+#include <mix/mix_array.h>
 
 namespace mix
 {
@@ -12,7 +12,7 @@ namespace mix
     {
         if (_event->is<FrontendEvent>())
         {
-            delete _event;
+            delete static_cast<FrontendEvent*> (_event);
         }
     }
 
