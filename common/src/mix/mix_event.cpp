@@ -13,6 +13,7 @@ namespace mix
 
     Event::~Event()
     {
+
     }
 
     void Event::finalize (Event* _event)
@@ -30,7 +31,7 @@ namespace mix
 
     EventQueue::~EventQueue()
     {
-        bx::MutexScope ms (m_mutex);
+        discardAll();
     }
 
     Result EventQueue::push (Event* _event)
@@ -86,6 +87,26 @@ namespace mix
         return Result::ok();
     }
 
+    Result EventQueue::discardAll()
+    {
+        bx::MutexScope ms (m_mutex);
+
+        Event* curr = m_head;
+
+        while (curr) {
+            Event* next = curr->m_next;
+
+            Event::finalize (curr);
+
+            curr = next;
+        }
+
+        m_head = nullptr;
+        m_tail = nullptr;
+
+        return Result::ok();
+    }
+
     bool EventQueue::isEmpty() const
     {
         bx::MutexScope ms (m_mutex);
@@ -98,6 +119,7 @@ namespace mix
 #if defined (MIX_TESTS)
 
 #include <mix/mix_tests.h>
+#include <bx/thread.h>
 
 class TestsOfEvent : public ::testing::Test
 {
@@ -155,6 +177,7 @@ TEST_F (TestsOfEvent, EventQueue_Operations)
 
     EXPECT_TRUE (queue.isEmpty());
 
+    // Push 2 events
     queue.push (new TestEvent(1));
     EXPECT_FALSE (queue.isEmpty());
 
@@ -180,6 +203,55 @@ TEST_F (TestsOfEvent, EventQueue_Operations)
     // discard 2
     EXPECT_TRUE (queue.discard().isOK());
     EXPECT_TRUE (queue.isEmpty());
+
+    // Push 2 events again
+    queue.push (new TestEvent(1));
+    queue.push (new TestEvent(2));
+    EXPECT_FALSE (queue.isEmpty());
+
+    queue.discardAll();
+    EXPECT_TRUE (queue.isEmpty());
+}
+
+TEST_F (TestsOfEvent, EventQueue_Multithread)
+{
+    struct Local
+    {
+        enum { CNT = 1024 };
+
+        static int32_t task (void* _userData)
+        {
+            mix::EventQueue* queue = static_cast<mix::EventQueue*> (_userData);
+
+            for (int i = 0; i < CNT; ++i)
+            {
+                queue->push (new TestEvent (i));
+                bx::yield();
+            }
+
+            return 0;
+        }
+    };
+    mix::EventQueue queue;
+
+    EXPECT_TRUE (queue.isEmpty());
+
+    bx::Thread t1, t2;
+    t1.init (Local::task, &queue);
+    t2.init (Local::task, &queue);
+    
+    int cnt = 0;
+    while (cnt < Local::CNT * 2)
+    {
+        if (queue.peek() != nullptr)
+        {
+            queue.discard();
+            ++cnt;
+        }
+    }
+
+    EXPECT_TRUE (queue.isEmpty());
+
 }
 
 #endif

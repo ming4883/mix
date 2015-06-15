@@ -64,6 +64,9 @@ public:
     //! Remove and destroy in front of the queue.
     Result discard();
 
+    //! Remove all Event objects in the queue.
+    Result discardAll();
+
     //! Returns true if there is no queued Event.
     bool isEmpty() const;
 
