@@ -1,4 +1,4 @@
-#if defined (MIX_IOS)
+#if defined (MIX_IOS) && !defined (MIX_TESTS)
 
 #include <mix/mix_application.h>
 
@@ -236,4 +236,4 @@ int main(int _argc, char* _argv[])
     return exitCode;
 }
 
-#endif // #if defined (MIX_IOS)
+#endif // #if defined (MIX_IOS) && !defined (MIX_TESTS)

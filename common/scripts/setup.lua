@@ -180,7 +180,10 @@ function mix_common_tests_project ()
 	end
 	
 	if mix_is_ios() then
-		defines { "MIX_IOS" }
+		defines { "MIX_IOS" }	
+		files {
+			path.join (COMMOM_DIR, "ios/tests.info.plist"),
+		}
 	end
 end
 
