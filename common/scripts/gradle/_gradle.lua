@@ -5,31 +5,40 @@ dofile "gradle_ndk_common.lua"
 dofile "gradle_ndk_project.lua"
 dofile "gradle_ndk_solution.lua"
 
+premake.gradle.is_app_project = function (prj)
+	return string.match (prj.kind, "App")
+end
+
 premake.gradle.onexecute = function ()
 	-- print ("gradle_execute()")
 end
 
-
 premake.gradle.onsolution = function (sln)
 	-- print ("android_onsolution() " .. sln.name)
 	
-	premake.generate (sln, path.join (sln.location, "app/jni", "Application.mk"), premake.gradle.generate_application_dot_mk)
-	premake.generate (sln, path.join (sln.location, "app/jni", "Android.mk"), premake.gradle.generate_solution_android_dot_mk)
 	premake.generate (sln, path.join (sln.location, "build.gradle"), premake.gradle.generate_solution_root_build_dot_gradle)
-	premake.generate (sln, path.join (sln.location, "app", "build.gradle"), premake.gradle.generate_solution_app_build_dot_gradle)
 	premake.generate (sln, path.join (sln.location, "support.gradle"), premake.gradle.generate_solution_support_dot_gradle)
 	premake.generate (sln, path.join (sln.location, "settings.gradle"), premake.gradle.generate_solution_settings_dot_gradle)
 	
 end
 
-
 premake.gradle.onproject = function (prj)
 	-- print ("android_onproject() " .. prj.name .. ":" .. prj.kind)
 	
-	local prj_location = path.join (prj.solution.location, "app/jni", prj.name)
-	-- print (prj_location)
-	os.mkdir (prj_location)
+	local prj_location = ''
 	
+	if premake.gradle.is_app_project (prj) then
+		local base_location = path.join (prj.solution.location, prj.name)
+		prj_location = path.join (base_location, "jni")
+		
+		premake.generate (prj, path.join (base_location, "build.gradle"), premake.gradle.generate_project_app_build_dot_gradle)
+		premake.generate (prj, path.join (prj_location, "Application.mk"), premake.gradle.generate_application_dot_mk)
+		
+	else
+		prj_location = path.join (prj.solution.location, "natives", "jni", prj.name)
+	end
+	
+	-- print (prj_location)
 	premake.generate (prj, path.join (prj_location, "Android.mk"), premake.gradle.generate_project_android_mk)
 end
 

@@ -3,10 +3,22 @@ premake.gradle.generate_project_android_mk = function (prj)
 	_p ("LOCAL_PATH := $(call my-dir)")
 	_p ("include $(CLEAR_VARS)")
 	_p ("")
+	_p ([[
+PROJECT_C_INCLUDES := 
+PROJECT_CFLAGS := 
+PROJECT_STATIC_LIBRARIES := 
+PROJECT_SHARED_LIBRARIES :=
+	]])
 	_p ("LOCAL_MODULE := " .. prj.name)
 	-- _p ("$(info LOCAL_PATH = $(LOCAL_PATH))")
 	
-	local refpath = path.join (prj.solution.location, "app/jni", prj.name)
+	local refpath
+	
+	if premake.gradle.is_app_project (prj) then
+		refpath = path.join (prj.solution.location, prj.name, "jni")
+	else
+		refpath = path.join (prj.solution.location, "natives", "jni", prj.name)
+	end
 	
 	function processpath(p)
 		local absofp = path.getabsolute (path.join (prj.location, p))
@@ -123,6 +135,16 @@ premake.gradle.generate_project_android_mk = function (prj)
 		_p ("include $(BUILD_STATIC_LIBRARY)")
 	else
 		_p ("include $(BUILD_SHARED_LIBRARY)")
+	end
+	
+	
+	local deps = premake.getlinks (premake.getconfig (prj), "dependencies", "object")
+	
+	if premake.gradle.is_app_project (prj) then
+		for _, lnk in ipairs (deps) do
+			local dep = premake.findproject (lnk.project.name)
+			_p ("$(call import-module, %s)", dep.name)
+		end
 	end
 	
 end

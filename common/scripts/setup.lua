@@ -117,7 +117,6 @@ function mix_setup_common_app()
 	files {
 		path.join (COMMOM_DIR, "include/mix/*.h"),
 		path.join (COMMOM_DIR, "src/mix/*.cpp"),
-		path.join (COMMOM_DIR, "src/mix/*.mm"),
 	}
 	
 	excludes {
@@ -141,6 +140,7 @@ function mix_setup_common_app()
 	end
 	
 	if mix_is_ios() then
+		files { path.join (COMMOM_DIR, "src/mix/*ios.mm") }
 		defines { "MIX_IOS" }
 	end
 	
@@ -160,19 +160,27 @@ function mix_common_tests_project ()
 	files {
 		path.join (COMMOM_DIR, "include/mix/*.h"),
 		path.join (COMMOM_DIR, "src/mix/*.cpp"),
-		path.join (COMMOM_DIR, "src/mix/*.mm"),
 		path.join (GTEST_DIR, "fused-src/gtest/gtest.h"),
 		path.join (GTEST_DIR, "fused-src/gtest/gtest-all.cc"),
-	}
-	
-	excludes {
-		path.join (COMMOM_DIR, "src/mix/mix_entry*"),
 	}
 	
 	defines { "MIX_TESTS" }
 	
 	if mix_is_android() then
 		defines { "MIX_ANDROID" }
+		links {
+			"log",
+			"android",
+		}
+		
+		local grd = gradle()
+		
+		grd.manifest = path.join (COMMOM_DIR, "android/tests/AndroidManifest.xml")
+		
+		grd.java_srcdirs = {
+			path.join (COMMOM_DIR, "android/app/java"),
+			path.join (COMMOM_DIR, "android/tests/java"),
+		}
 	end
 	
 	if mix_is_windows_desktop() then
@@ -182,9 +190,15 @@ function mix_common_tests_project ()
 	if mix_is_ios() then
 		defines { "MIX_IOS" }	
 		files {
-			path.join (COMMOM_DIR, "ios/tests.info.plist"),
+			path.join (COMMOM_DIR, "src/mix/*ios.mm"),
+			path.join (COMMOM_DIR, "ios/tests/info.plist"),
 		}
 	end
+	
+	excludes {
+		path.join (COMMOM_DIR, "src/mix/mix_entry*"),
+	}
+	
 end
 
 -- bgfx library

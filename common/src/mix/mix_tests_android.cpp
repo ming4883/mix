@@ -1,94 +1,107 @@
 #if defined (MIX_ANDROID)
 
-#include <mix/mix_application.h>
-
-#include <bgfx.h>
-#include <bgfxplatform.h>
+#include <mix/mix_tests.h>
 
 #include <jni.h>
 #include <android/log.h>
-#include <android/native_window_jni.h>
-#include <EGL/egl.h>
 
-#include <memory>
-
-void logI (const char* msg)
+class JNILogger
 {
-	__android_log_print (ANDROID_LOG_INFO, "bgfx", "%s", msg);
+public:
+    JNIEnv* env;
+    jobject obj;
+    jclass cls;
+    jmethodID mth;
+
+    JNILogger()
+        : env (nullptr)
+        , obj (nullptr)
+        , cls (nullptr)
+        , mth (nullptr)
+    {
+
+    }
+
+    ~JNILogger()
+    {
+    }
+
+    void init (JNIEnv* _env, jobject _obj)
+    {
+        env = _env;
+        obj = env->NewGlobalRef (_obj);
+        cls = env->GetObjectClass (obj);
+        mth = env->GetMethodID (cls, "appendLog", "(ZLjava/lang/String;)V");
+
+        if (!mth)
+            logE ("JNILogger method not found!");
+    }
+
+    void shutdown()
+    {
+        env->DeleteGlobalRef (obj);
+    }
+
+    void appendLog (bool _isError, mix::TestListener::Stream& _msg)
+    {
+        if (mth)
+        {
+            jobject _jmsg = env->NewStringUTF (_msg.str().c_str());
+            env->CallVoidMethod (obj, mth, (jboolean)_isError, _jmsg);
+            env->DeleteLocalRef (_jmsg);
+        }
+
+        if (_isError)
+            logE (_msg.str().c_str());
+        else
+            logI (_msg.str().c_str());
+    }
+
+    static JNILogger inst;
+
+private:
+
+    static void logI (const char* msg)
+    {
+        __android_log_print (ANDROID_LOG_INFO, "mix", "%s", msg);
+    }
+
+    static void logE (const char* msg)
+    {
+        __android_log_print (ANDROID_LOG_ERROR, "mix", "%s", msg);
+    }
+};
+
+JNILogger JNILogger::inst;
+
+namespace mix
+{
+    void TestListener::output (bool _isError, Stream& _msg)
+    {
+        JNILogger::inst.appendLog (_isError, _msg);
+    }
 }
 
-template<typename... Args>
-void logI (const char* fmt, Args&&... args)
-{
-	__android_log_print (ANDROID_LOG_INFO, "bgfx", fmt, args...);
-}
-
-#define JNIMETHOD(type, method)	JNIEXPORT type JNICALL Java_org_mix_common_BaseActivity_00024NativeCode_ ## method
+#define JNIMETHOD(type, method) JNIEXPORT type JNICALL Java_org_mix_common_TestsActivity_ ## method
 
 // JNI native method
 extern "C" {
-	
-	JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
-	{
-		logI ("%d, %d", surfaceWidth, surfaceHeight);
+    
+    JNIMETHOD (void, handleExecute) (JNIEnv* env, jobject obj)
+    {
+        JNILogger::inst.init (env, obj);
 
-		bgfx::PlatformData pd;
-		pd.ndt				= NULL;
-		pd.nwh    			= NULL;
-		pd.context      	= eglGetCurrentContext();
-		pd.backBuffer   	= NULL;
-		pd.backBufferDS 	= NULL;
-		bgfx::setPlatformData (pd);
+        int argc = 0;
+        char** argv = nullptr;
+        ::testing::InitGoogleTest (&argc, argv);
 
-		logI ("bgfx::renderFrame");
-		bgfx::renderFrame();
+        ::testing::UnitTest::GetInstance()->listeners().Append (new mix::TestListener);
 
-		logI ("bgfx::init");
-		bgfx::init();
+        int result = RUN_ALL_TESTS();
+        (void)result;
 
-		logI ("bgfx::reset");
-		bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
-		
-		if (!mix::theApp())
-		{
-			logI ("no mix::Application was created!");
-			return;
-		}
-
-		mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
-		mix::theApp()->preInit();
-		mix::Result ret = mix::theApp()->init();
-		if (ret.isFail()) {
-			logI ("mix::theApp.init() failed: %s", ret.why());
-		}
-		
-		mix::theApp()->postInit();
-	}
-	
-	JNIMETHOD (void, handleUpdate) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
-	{
-		if (mix::theApp())
-		{
-			mix::theApp()->setBackbufferSize ((int)surfaceWidth, (int)surfaceHeight);
-			mix::theApp()->preUpdate();
-			mix::theApp()->update();
-			mix::theApp()->postUpdate();
-		}
-	}
-	
-	JNIMETHOD (void, handleQuit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
-	{
-		if (mix::theApp())
-		{
-			mix::theApp()->preShutdown();
-			mix::theApp()->shutdown();
-			mix::Application::cleanup();
-			mix::theApp()->postShutdown();
-		}
-		
-		logI ("bgfx::shutdown");
-		bgfx::shutdown();
-	}
+        JNILogger::inst.shutdown ();
+    }
 }
 
 #endif // #if defined (MIX_ANDROID)
