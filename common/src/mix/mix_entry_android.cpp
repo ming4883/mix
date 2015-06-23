@@ -6,10 +6,11 @@
 #include <bgfxplatform.h>
 
 #include <jni.h>
-#include <android/log.h>
 #include <android/native_window_jni.h>
 #include <EGL/egl.h>
 
+/*
+#include <android/log.h>
 void logI (const char* msg)
 {
 	__android_log_print (ANDROID_LOG_INFO, "bgfx", "%s", msg);
@@ -20,6 +21,7 @@ void logI (const char* fmt, Args&&... args)
 {
 	__android_log_print (ANDROID_LOG_INFO, "bgfx", fmt, args...);
 }
+*/
 
 #define JNIMETHOD(type, method)	JNIEXPORT type JNICALL Java_org_mix_common_BaseActivity_00024NativeCode_ ## method
 
@@ -28,7 +30,9 @@ extern "C" {
 	
 	JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls, jobject surface, jint surfaceWidth, jint surfaceHeight)
 	{
-		logI ("%d, %d", surfaceWidth, surfaceHeight);
+        mix::Log::init();
+
+		mix::Log::i ("app", "%d, %d", surfaceWidth, surfaceHeight);
 
 		bgfx::PlatformData pd;
 		pd.ndt				= NULL;
@@ -38,18 +42,18 @@ extern "C" {
 		pd.backBufferDS 	= NULL;
 		bgfx::setPlatformData (pd);
 
-		logI ("bgfx::renderFrame");
+		mix::Log::i ("app", "bgfx::renderFrame");
 		bgfx::renderFrame();
 
-		logI ("bgfx::init");
+		mix::Log::i ("app", "bgfx::init");
 		bgfx::init();
 
-		logI ("bgfx::reset");
+		mix::Log::i ("app", "bgfx::reset");
 		bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
 		
 		if (!mix::theApp())
 		{
-			logI ("no mix::Application was created!");
+			mix::Log::e ("app", "no mix::Application was created!");
 			return;
 		}
 
@@ -57,7 +61,7 @@ extern "C" {
 		mix::theApp()->preInit();
 		mix::Result ret = mix::theApp()->init();
 		if (ret.isFail()) {
-			logI ("mix::theApp.init() failed: %s", ret.why());
+			mix::Log::e ("app", "mix::theApp.init() failed: %s", ret.why());
 		}
 		
 		mix::theApp()->postInit();
@@ -84,7 +88,8 @@ extern "C" {
 			mix::theApp()->postShutdown();
 		}
 		
-		logI ("bgfx::shutdown");
+		mix::Log::i ("app", "bgfx::shutdown");
+        mix::Log::shutdown();
 		bgfx::shutdown();
 	}
 }

@@ -9,17 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CAEAGLLayer.h>
 
-void logI (const char* msg)
-{
-    printf ("%s\n", msg);
-}
-
-template<typename... Args>
-void logI (const char* fmt, Args&&... args)
-{
-    printf (fmt, args...);
-}
-
 @interface mixView : UIView
 {
     CADisplayLink* m_displayLink;
@@ -128,6 +117,7 @@ void logI (const char* fmt, Args&&... args)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     BX_UNUSED(application, launchOptions);
+    mix::Log::init();
 
     CGRect rect = [ [UIScreen mainScreen] bounds];
     m_window = [ [UIWindow alloc] initWithFrame: rect];
@@ -144,25 +134,25 @@ void logI (const char* fmt, Args&&... args)
 
     if (!mix::theApp())
     {
-        logI ("no mix::Application was created!");
+        mix::Log::e ("app", "no mix::Application was created!");
         return NO;
     }
-	
+
     bgfx::PlatformData pd;
-    pd.ndt				= NULL;
-    pd.nwh    			= m_view.layer;
-    pd.context      	= NULL;
-    pd.backBuffer   	= NULL;
-    pd.backBufferDS 	= NULL;
+    pd.ndt              = NULL;
+    pd.nwh              = m_view.layer;
+    pd.context          = NULL;
+    pd.backBuffer       = NULL;
+    pd.backBufferDS     = NULL;
     bgfx::setPlatformData (pd);
 
-    logI ("bgfx::renderFrame");
+    mix::Log::i ("app", "bgfx::renderFrame");
     bgfx::renderFrame();
 
-    logI ("bgfx::init");
+    mix::Log::i ("app", "bgfx::init");
     bgfx::init();
 
-    logI ("bgfx::reset");
+    mix::Log::i ("app", "bgfx::reset");
     mix::theApp()->setBackbufferSize ((int)(scaleFactor * rect.size.width), (int)(scaleFactor * rect.size.height));
 
     bgfx::reset (mix::theApp()->getBackbufferWidth(), mix::theApp()->getBackbufferHeight(), BGFX_RESET_NONE);
@@ -171,7 +161,7 @@ void logI (const char* fmt, Args&&... args)
 
     mix::Result ret = mix::theApp()->init();
     if (ret.isFail()) {
-        logI ("mix::theApp().init() failed: %s", ret.why());
+        mix::Log::i ("app", "mix::theApp().init() failed: %s", ret.why());
     }
 
     mix::theApp()->postInit();
@@ -211,11 +201,13 @@ void logI (const char* fmt, Args&&... args)
         mix::theApp()->preShutdown();
         mix::theApp()->shutdown();
         mix::theApp()->postShutdown();
-		mix::Application::cleanup();
+        mix::Application::cleanup();
     }
 
-    logI ("bgfx::shutdown");
+    mix::Log::i ("app", "bgfx::shutdown");
     bgfx::shutdown();
+    
+    mix::Log::shutdown();
 }
 
 - (void)dealloc

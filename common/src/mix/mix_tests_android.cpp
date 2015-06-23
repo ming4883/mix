@@ -1,6 +1,7 @@
 #if defined (MIX_ANDROID)
 
 #include <mix/mix_tests.h>
+#include <mix/mix_log.h>
 
 #include <jni.h>
 #include <android/log.h>
@@ -34,7 +35,7 @@ public:
         mth = env->GetMethodID (cls, "appendLog", "(ZLjava/lang/String;)V");
 
         if (!mth)
-            logE ("JNILogger method not found!");
+            mix::Log::e ("org_mix_common", "JNILogger method not found!");
     }
 
     void shutdown()
@@ -50,26 +51,9 @@ public:
             env->CallVoidMethod (obj, mth, (jboolean)_isError, _jmsg);
             env->DeleteLocalRef (_jmsg);
         }
-
-        if (_isError)
-            logE (_msg.str().c_str());
-        else
-            logI (_msg.str().c_str());
     }
 
     static JNILogger inst;
-
-private:
-
-    static void logI (const char* msg)
-    {
-        __android_log_print (ANDROID_LOG_INFO, "mix", "%s", msg);
-    }
-
-    static void logE (const char* msg)
-    {
-        __android_log_print (ANDROID_LOG_ERROR, "mix", "%s", msg);
-    }
 };
 
 JNILogger JNILogger::inst;
@@ -79,6 +63,11 @@ namespace mix
     void TestListener::output (bool _isError, Stream& _msg)
     {
         JNILogger::inst.appendLog (_isError, _msg);
+
+        if (_isError)
+            mix::Log::e ("org_mix_common", _msg.str().c_str());
+        else
+            mix::Log::i ("org_mix_common", _msg.str().c_str());
     }
 }
 
@@ -89,6 +78,8 @@ extern "C" {
     
     JNIMETHOD (void, handleExecute) (JNIEnv* env, jobject obj)
     {
+        mix::Log::init();
+
         JNILogger::inst.init (env, obj);
 
         int argc = 0;
@@ -101,6 +92,8 @@ extern "C" {
         (void)result;
 
         JNILogger::inst.shutdown ();
+
+        mix::Log::shutdown();
     }
 }
 

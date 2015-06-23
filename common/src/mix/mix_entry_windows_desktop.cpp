@@ -1,6 +1,7 @@
 #if defined (MIX_WINDOWS_DESKTOP)
 
 #include <mix/mix_application.h>
+#include <mix/mix_frontend.h>
 
 #include <bgfx.h>
 #include <bgfxplatform.h>
@@ -8,17 +9,24 @@
 #include <Windows.h>
 #include <stdio.h>
 
+/*
 void logI (const char* msg)
 {
-    printf ("%s\n", msg);
+    //printf ("%s\n", msg);
+    ::OutputDebugStringA (msg);
+    ::OutputDebugStringA ("\n");
 }
 
 template<typename... Args>
 void logI (const char* fmt, Args&&... args)
 {
-    printf (fmt, args...);
+    //printf (fmt, args...);
+    char str[256];
+    sprintf_s(str, fmt, args...);
+    ::OutputDebugStringA (str);
+    ::OutputDebugStringA ("\n");
 }
-
+*/
 
 #define WNDCLASSNAME "mixWindow"
 
@@ -27,19 +35,58 @@ class Window
 public:
     HWND window;
     HDC display;
-	
-	static LRESULT WINAPI windowMsgProc (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		switch (msg)
-		{
-			case WM_CLOSE: {
-				PostQuitMessage (0);
-				break;
-			}
-		}
+    bool minimizied;
+    int lastW, lastH;
+    
+    static LRESULT WINAPI windowMsgProc (HWND _hWnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
+    {
+        Window* _this = reinterpret_cast<Window*> (GetWindowLongA (_hWnd, GWL_USERDATA));
+        (void)_this;
+        switch (_msg)
+        {
+            case WM_CLOSE:
+            {
+                mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterBackground());
+                PostQuitMessage (0);
+                break;
+            }
 
-		return DefWindowProc(hWnd, msg, wParam, lParam);
-	}
+            case WM_SIZE:
+            {
+                RECT _rect;
+                GetClientRect (_hWnd, &_rect);
+                int _fnw = (int)_rect.right - (int)_rect.left;
+                int _fnh = (int)_rect.bottom - (int)_rect.top;
+
+                switch (_wParam)
+                {
+                case SIZE_MINIMIZED:
+                    mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterBackground());
+                    _this->minimizied = true;
+                    break;
+
+                case SIZE_MAXIMIZED:
+                case SIZE_RESTORED:
+                    {
+                        if (_this->minimizied)
+                            mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterForeground());
+
+                        mix::Application::get()->getEventQueue().push (mix::FrontendEvent::resized (_fnw, _fnh));
+                        mix::Application::get()->setBackbufferSize (_fnw, _fnh);
+                    
+                        _this->minimizied = false;
+                    }
+                    break;
+                }
+
+                //mix::Log::i ("WM_SIZE wParam=%d", _wParam);
+                
+                break;
+            }
+        }
+
+        return DefWindowProc(_hWnd, _msg, _wParam, _lParam);
+    }
 
 
     bool init (const char* name, int w, int h)
@@ -82,8 +129,13 @@ public:
 
         window = CreateWindowExA (dwExStyle, WNDCLASSNAME, name, dwStyle, windowLeft, windowTop, windowWidth, windowHeight, nullptr, nullptr, GetModuleHandle (nullptr), 0);
         SetWindowTextA (window, name);
+        SetWindowLongA (window, GWL_USERDATA, reinterpret_cast<LONG> (this));
 
         display = GetDC (window);
+
+        minimizied = false;
+        lastW = 0;
+        lastH = 0;
 
         ShowWindow (window, SW_SHOW);
 
@@ -113,66 +165,69 @@ public:
 
 int main (int argc, const char** argv)
 {
-    
+    mix::Log::init();
+
     if (!mix::Application::get())
     {
-        logI ("mix::theApp is nullptr!");
+        mix::Log::e ("app", "mix::theApp is nullptr!");
         return -1;
     }
 
-	Window window;
-	
-	int surfaceWidth  = mix::theApp()->getBackbufferWidth()  == 0 ? 800 : mix::theApp()->getBackbufferWidth();
-	int surfaceHeight = mix::theApp()->getBackbufferHeight() == 0 ? 450 : mix::theApp()->getBackbufferHeight();
-	window.init ("mixApp", surfaceWidth, surfaceHeight);
-	
-	logI ("%d, %d", surfaceWidth, surfaceHeight);
+    Window window;
+    
+    int surfaceWidth  = mix::theApp()->getBackbufferWidth()  == 0 ? 800 : mix::theApp()->getBackbufferWidth();
+    int surfaceHeight = mix::theApp()->getBackbufferHeight() == 0 ? 450 : mix::theApp()->getBackbufferHeight();
+    window.init ("mixApp", surfaceWidth, surfaceHeight);
+    
+    mix::Log::e ("app", "%d, %d", surfaceWidth, surfaceHeight);
     mix::theApp()->setBackbufferSize (surfaceWidth, surfaceHeight);
 
-	bgfx::PlatformData pd;
-	pd.ndt				= NULL;
-	pd.nwh    			= window.window;
-	pd.context      	= NULL;
-	pd.backBuffer   	= NULL;
-	pd.backBufferDS 	= NULL;
-	bgfx::setPlatformData (pd);
+    bgfx::PlatformData pd;
+    pd.ndt				= NULL;
+    pd.nwh    			= window.window;
+    pd.context      	= NULL;
+    pd.backBuffer   	= NULL;
+    pd.backBufferDS 	= NULL;
+    bgfx::setPlatformData (pd);
 
-	//logI ("bgfx::renderFrame");
-	//bgfx::renderFrame();
+    //logI ("bgfx::renderFrame");
+    //bgfx::renderFrame();
 
-	logI ("bgfx::init");
-	bgfx::init();
+    mix::Log::e ("app", "bgfx::init");
+    bgfx::init();
 
-	logI ("bgfx::reset");
-	bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
+    //logI ("bgfx::reset");
+    //bgfx::reset (surfaceWidth, surfaceHeight, BGFX_RESET_NONE);
 
-	mix::theApp()->preInit();
-	mix::Result ret = mix::theApp()->init();
-	if (ret.isFail()) {
-		logI ("mix::theApp()->init() failed: %s", ret.why());
-		return 0;
-	}
-	mix::theApp()->postInit();
-	
-	while (window.update())
-	{
-		mix::theApp()->preUpdate();
-		mix::theApp()->update();
-		mix::theApp()->postUpdate();
-	}
-	
-	mix::theApp()->preShutdown();
-	mix::theApp()->shutdown();
-	mix::theApp()->postShutdown();
-	
-	mix::Application::cleanup();
-	
-	logI ("bgfx::shutdown");
-	bgfx::shutdown();
-	
-	window.shutdown();
-	
-	return 0;
+    mix::theApp()->preInit();
+    mix::Result ret = mix::theApp()->init();
+    if (ret.isFail()) {
+        mix::Log::e ("app", "mix::theApp()->init() failed: %s", ret.why());
+        return 0;
+    }
+    mix::theApp()->postInit();
+    
+    while (window.update())
+    {
+        mix::theApp()->preUpdate();
+        mix::theApp()->update();
+        mix::theApp()->postUpdate();
+    }
+    
+    mix::theApp()->preShutdown();
+    mix::theApp()->shutdown();
+    mix::theApp()->postShutdown();
+    
+    mix::Application::cleanup();
+    
+    mix::Log::e ("app", "bgfx::shutdown");
+    bgfx::shutdown();
+    
+    window.shutdown();
+
+    mix::Log::shutdown();
+    
+    return 0;
 }
 
 #endif // #if defined (MIX_WINDOWS_DESKTOP)

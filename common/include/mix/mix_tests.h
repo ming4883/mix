@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
+#include <bx/thread.h>
+
 namespace mix
 {
 

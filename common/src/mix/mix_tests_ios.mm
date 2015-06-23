@@ -1,6 +1,7 @@
 #if defined (MIX_IOS) && defined (MIX_TESTS)
 
 #include <mix/mix_tests.h>
+#include <mix/mix_log.h>
 
 #import <iostream>
 
@@ -17,11 +18,16 @@ namespace mix
 
 int main (int _argc, char* _argv[])
 {
+    mix::Log::init();
+
     ::testing::InitGoogleTest (&_argc, _argv);
 
     ::testing::UnitTest::GetInstance()->listeners().Append (new mix::TestListener);
 
-    return RUN_ALL_TESTS();
+    int result = RUN_ALL_TESTS();
+    mix::Log::final();
+    
+    return result;
 }
 
 #endif // #if defined (MIX_IOS) && defined (MIX_TESTS)

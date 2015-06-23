@@ -1,6 +1,7 @@
 #if defined (MIX_WINDOWS_DESKTOP)
 
 #include <mix/mix_tests.h>
+#include <mix/mix_log.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -20,11 +21,16 @@ GTEST_API_ int main (int _argc, char* _argv[])
     _CrtSetBreakAlloc (-1);
 #endif
 
+    mix::Log::init();
+
     ::testing::InitGoogleTest (&_argc, _argv);
 
     ::testing::UnitTest::GetInstance()->listeners().Append (new mix::TestListener);
 
-    return RUN_ALL_TESTS();
+    int result = RUN_ALL_TESTS();
+
+    mix::Log::shutdown();
+    return result;
 }
 
 #endif // #if defined (MIX_WINDOWS_DESKTOP)

@@ -21,6 +21,42 @@ namespace mix
     {
     }
 
+    ApplicationEvent* ApplicationEvent::terminating()
+    {
+        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::Terminating);
+        return _this;
+    }
+
+    ApplicationEvent* ApplicationEvent::lowMemory()
+    {
+        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::LowMemory);
+        return _this;
+    }
+
+    ApplicationEvent* ApplicationEvent::willEnterBackground()
+    {
+        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::WillEnterBackground);
+        return _this;
+    }
+
+    ApplicationEvent* ApplicationEvent::didEnterBackground()
+    {
+        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::DidEnterBackground);
+        return _this;
+    }
+
+    ApplicationEvent* ApplicationEvent::willEnterForeground()
+    {
+        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::WillEnterForeground);
+        return _this;
+    }
+
+    ApplicationEvent* ApplicationEvent::didEnterForeground()
+    {
+        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::DidEnterForeground);
+        return _this;
+    }
+
     Application* Application::ms_inst = nullptr;
 
     Result Application::cleanup ()
@@ -63,6 +99,13 @@ namespace mix
     void Application::preUpdate()
     {
         m_timeSource.nextFrame();
+
+        while (!m_eventQueue.isEmpty())
+        {
+            const Event* _event = m_eventQueue.peek();
+            handleEvent (_event);
+            m_eventQueue.discard();
+        }
     }
 
     void Application::postUpdate()

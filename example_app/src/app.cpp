@@ -1,4 +1,5 @@
 #include <mix/mix_application.h>
+#include <mix/mix_frontend.h>
 #include <bgfx.h>
 #include <math.h>
 
@@ -43,6 +44,20 @@ namespace example
 			bgfx::submit (0);
 			bgfx::frame ();
 		}
+
+        void handleEvent (const mix::Event* _event)
+        {
+            {
+                const mix::FrontendEvent* _typedevt = _event->cast<mix::FrontendEvent>();
+                if (nullptr != _typedevt)
+                {
+                    if (_typedevt->type == mix::FrontendEventType::Resized)
+                    {
+                        bgfx::reset (_typedevt->params.size.w, _typedevt->params.size.h, BGFX_RESET_NONE);
+                    }
+                }
+            }
+        }
 	};
 
 	TheApplication* theApp = new TheApplication();

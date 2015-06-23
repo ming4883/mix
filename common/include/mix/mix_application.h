@@ -6,6 +6,7 @@
 #include <mix/mix_result.h>
 #include <mix/mix_event.h>
 #include <mix/mix_time.h>
+#include <mix/mix_log.h>
 
 namespace mix
 {
@@ -33,6 +34,13 @@ public:
     ApplicationEventType::Enum type;
     
     ApplicationEvent (ApplicationEventType::Enum _type);
+
+    static ApplicationEvent* terminating();
+    static ApplicationEvent* lowMemory();
+    static ApplicationEvent* willEnterBackground();
+    static ApplicationEvent* didEnterBackground();
+    static ApplicationEvent* willEnterForeground();
+    static ApplicationEvent* didEnterForeground();
 };
 
 class Application
@@ -52,6 +60,9 @@ public:
 	
 	//! Invoked once per frame
 	virtual void update() = 0;
+
+    //! Invoked when there is an Event popped from the Application EventQueue
+    virtual void handleEvent (const Event* _event) = 0;
 	
 public:
     Application();

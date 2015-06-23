@@ -1,5 +1,4 @@
 #include <mix/mix_tests.h>
-#include <bx/thread.h>
 
 class TestsOfEvent : public ::testing::Test
 {
