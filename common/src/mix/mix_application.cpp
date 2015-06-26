@@ -114,6 +114,12 @@ namespace mix
 
     void Application::preShutdown()
     {
+        while (!m_eventQueue.isEmpty())
+        {
+            const Event* _event = m_eventQueue.peek();
+            handleEvent (_event);
+            m_eventQueue.discard();
+        }
     }
 
     void Application::postShutdown()

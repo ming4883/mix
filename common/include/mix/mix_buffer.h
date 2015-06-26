@@ -9,9 +9,15 @@ namespace mix
 class Buffer
 {
 public:
+
+    //! Default constructor, leave the Buffer empty.
     Buffer (void);
-    Buffer (uint32_t _contentSize);
-    Buffer (const uint8_t* _contentPtr, uint32_t _contentSize);
+
+    /*! Construct with size and optional contents, the Buffer is allocated to _contentSize
+        and copy the contents at _contentPtr if it is not nullptr.
+     */
+    Buffer (uint32_t _contentSize, const uint8_t* _contentPtr = nullptr);
+
     Buffer (const Buffer& _contents);
     Buffer (Buffer&& _contents);
 
@@ -40,6 +46,8 @@ public:
     bool isEmpty() const;
 
     void resize (uint32_t _size);
+
+    void fill (uint8_t _value);
 
 private:
     void* m_handle;

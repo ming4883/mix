@@ -46,7 +46,7 @@ public:
         {
             case WM_CLOSE:
             {
-                mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterBackground());
+                mix::Application::get()->getEventQueue().push (mix::FrontendEvent::closed());
                 PostQuitMessage (0);
                 break;
             }
@@ -71,9 +71,18 @@ public:
                         if (_this->minimizied)
                             mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterForeground());
 
-                        mix::Application::get()->getEventQueue().push (mix::FrontendEvent::resized (_fnw, _fnh));
+                        int delta = abs (_this->lastW - _fnw) + abs (_this->lastH - _fnh);
+                        
+                        if (delta >= 2)
+                        {
+                            mix::Application::get()->getEventQueue().push (mix::FrontendEvent::resized (_fnw, _fnh));
+                        }
+                        
                         mix::Application::get()->setBackbufferSize (_fnw, _fnh);
-                    
+                        
+                        _this->lastW = _fnw;
+                        _this->lastH = _fnh;
+
                         _this->minimizied = false;
                     }
                     break;
@@ -213,6 +222,8 @@ int main (int argc, const char** argv)
         mix::theApp()->update();
         mix::theApp()->postUpdate();
     }
+
+    mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::terminating());
     
     mix::theApp()->preShutdown();
     mix::theApp()->shutdown();

@@ -41,13 +41,10 @@ Buffer::Buffer (void)
 {
 }
 
-Buffer::Buffer (uint32_t _contentSize)
-    : m_handle (BufferImpl::create (_contentSize))
-{
-}
-
-Buffer::Buffer (const uint8_t* _contentPtr, uint32_t _contentSize)
-    : m_handle (BufferImpl::create (_contentPtr, _contentPtr + _contentSize))
+Buffer::Buffer (uint32_t _contentSize, const uint8_t* _contentPtr)
+    : m_handle (_contentPtr == nullptr ?
+        BufferImpl::create (_contentSize):
+        BufferImpl::create (_contentPtr, _contentPtr + _contentSize))
 {
 }
 
@@ -130,6 +127,14 @@ void Buffer::resize (uint32_t _size)
     else
     {
         BufferImpl::get (this)->resize (_size);
+    }
+}
+
+void Buffer::fill (uint8_t _value)
+{
+    if (m_handle)
+    {
+        memset (&BufferImpl::get (this)->front(), _value, BufferImpl::get (this)->size());
     }
 }
 
