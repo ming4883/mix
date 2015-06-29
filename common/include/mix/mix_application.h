@@ -79,8 +79,8 @@ public:
     //! Return the TimeSource
     const TimeSource& getTimeSource() const { return m_timeSource; }
 
-    //! Return the EventQueue for application wise evnet publishing
-    EventQueue& getEventQueue() { return m_eventQueue; }
+    //! Push an Event to the Application for processing
+    Result pushEvent (Event* _event);
 
 public:
     //! Perform common tasks before Application::init()
@@ -100,6 +100,9 @@ public:
 
     //! Perform common tasks after Application::shutdown()
     void postShutdown();
+
+    //! Process all events in EventQueue.
+    void processQueuedEvents();
 
 private:
     static Application* ms_inst;

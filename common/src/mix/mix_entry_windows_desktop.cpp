@@ -46,7 +46,7 @@ public:
         {
             case WM_CLOSE:
             {
-                mix::Application::get()->getEventQueue().push (mix::FrontendEvent::closed());
+                mix::theApp()->pushEvent (mix::FrontendEvent::closed());
                 PostQuitMessage (0);
                 break;
             }
@@ -61,7 +61,7 @@ public:
                 switch (_wParam)
                 {
                 case SIZE_MINIMIZED:
-                    mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterBackground());
+                    mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterBackground());
                     _this->minimizied = true;
                     break;
 
@@ -69,16 +69,16 @@ public:
                 case SIZE_RESTORED:
                     {
                         if (_this->minimizied)
-                            mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::didEnterForeground());
+                            mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterForeground());
 
                         int delta = abs (_this->lastW - _fnw) + abs (_this->lastH - _fnh);
                         
                         if (delta >= 2)
                         {
-                            mix::Application::get()->getEventQueue().push (mix::FrontendEvent::resized (_fnw, _fnh));
+                            mix::theApp()->pushEvent (mix::FrontendEvent::resized (_fnw, _fnh));
                         }
                         
-                        mix::Application::get()->setBackbufferSize (_fnw, _fnh);
+                        mix::theApp()->setBackbufferSize (_fnw, _fnh);
                         
                         _this->lastW = _fnw;
                         _this->lastH = _fnh;
@@ -223,7 +223,7 @@ int main (int argc, const char** argv)
         mix::theApp()->postUpdate();
     }
 
-    mix::Application::get()->getEventQueue().push (mix::ApplicationEvent::terminating());
+    mix::theApp()->pushEvent (mix::ApplicationEvent::terminating());
     
     mix::theApp()->preShutdown();
     mix::theApp()->shutdown();

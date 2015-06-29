@@ -100,12 +100,7 @@ namespace mix
     {
         m_timeSource.nextFrame();
 
-        while (!m_eventQueue.isEmpty())
-        {
-            const Event* _event = m_eventQueue.peek();
-            handleEvent (_event);
-            m_eventQueue.discard();
-        }
+        processQueuedEvents();
     }
 
     void Application::postUpdate()
@@ -114,12 +109,7 @@ namespace mix
 
     void Application::preShutdown()
     {
-        while (!m_eventQueue.isEmpty())
-        {
-            const Event* _event = m_eventQueue.peek();
-            handleEvent (_event);
-            m_eventQueue.discard();
-        }
+        processQueuedEvents();
     }
 
     void Application::postShutdown()
@@ -141,4 +131,19 @@ namespace mix
 	{
 		return m_backbufferHeight;
 	}
+
+    Result Application::pushEvent (Event* _event)
+    {
+        return m_eventQueue.push (_event);
+    }
+
+    void Application::processQueuedEvents()
+    {
+        while (!m_eventQueue.isEmpty())
+        {
+            const Event* _event = m_eventQueue.peek();
+            handleEvent (_event);
+            m_eventQueue.discard();
+        }
+    }
 }

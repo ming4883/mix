@@ -35,13 +35,34 @@ public class BaseActivity extends android.app.Activity {
         Stopped,
     }
 
+    public enum NativeFrontendEvent
+    {
+        Resized,
+        Closed,
+        TouchDown,
+        TouchMove,
+        TouchUp,
+    }
+
+    public enum NativeApplicationEvent
+    {
+        Terminating,
+        LowMemory,
+        WillEnterBackground,
+        DidEnterBackground,
+        WillEnterForeground,
+        DidEnterForeground,
+    }
+
     public static class NativeCode
     {
         private NativeState m_nativeState = NativeState.None;
 
-        public static native void handleInit(Object surface, int w, int h);
-        public static native void handleUpdate(Object surface, int w, int h);
-        public static native void handleQuit(Object surface, int w, int h);
+        public static native void handleInit();
+        public static native void handleUpdate();
+        public static native void handleQuit();
+        public static native void handleFrontendEvent(int evt, float param0, float param1);
+        public static native void handleApplicationEvent(int evt);
 
         @Override
         public String toString() {
@@ -63,6 +84,8 @@ public class BaseActivity extends android.app.Activity {
         }
 
         public synchronized void stop() {
+
+            NativeCode.handleApplicationEvent(NativeApplicationEvent.Terminating.ordinal());
             m_nativeState = NativeState.Stopping;
         }
 
@@ -72,6 +95,7 @@ public class BaseActivity extends android.app.Activity {
             if (m_nativeState != NativeState.Running)
                 return;
 
+            NativeCode.handleApplicationEvent (NativeApplicationEvent.WillEnterBackground.ordinal());
             m_nativeState = NativeState.Paused;
         }
 
@@ -81,28 +105,26 @@ public class BaseActivity extends android.app.Activity {
             if (m_nativeState != NativeState.Paused)
                 return;
 
+            NativeCode.handleApplicationEvent (NativeApplicationEvent.WillEnterForeground.ordinal());
             m_nativeState = NativeState.Running;
         }
 
-        public synchronized void doFrame(Surface surface, int width, int height) {
+        public synchronized void doFrame() {
             if (NativeState.Starting == m_nativeState) {
-                handleInit(surface, width, height);
+                handleInit();
                 m_nativeState = NativeState.Running;
             }
             else if (NativeState.Running == m_nativeState) {
-                handleUpdate(surface, width, height);
+                handleUpdate();
             }
             else if (NativeState.Stopping == m_nativeState) {
-                handleQuit(surface, width, height);
+                handleQuit();
                 m_nativeState = NativeState.Stopped;
             }
         }
     }
 
     public class BaseView extends GLSurfaceView implements GLSurfaceView.Renderer {
-
-        private int m_surfaceWidth = -1;
-        private int m_surfaceHeight = -1;
 
         public NativeCode nativeCode;
 
@@ -123,13 +145,11 @@ public class BaseActivity extends android.app.Activity {
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
             log("surfaceChanged(" + String.valueOf(width) + "," + String.valueOf(height) +")");
-
-            m_surfaceWidth = width;
-            m_surfaceHeight = height;
+            NativeCode.handleFrontendEvent (NativeFrontendEvent.Resized.ordinal(), (float)width, (float)height);
         }
 
         public void onDrawFrame(GL10 gl) {
-            nativeCode.doFrame(getHolder().getSurface(), m_surfaceWidth, m_surfaceHeight);
+            nativeCode.doFrame();
         }
     }
 
@@ -172,6 +192,11 @@ public class BaseActivity extends android.app.Activity {
     protected void onResume() {
         super.onResume();
         m_view.nativeCode.resume();
+    }
+
+    @Override
+    public void onTrimMemory (int level) {
+        NativeCode.handleApplicationEvent (NativeApplicationEvent.LowMemory.ordinal());
     }
 	
 	protected BaseView onCreateContentView() {
