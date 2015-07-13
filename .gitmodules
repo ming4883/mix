@@ -4,3 +4,6 @@
 [submodule "vendor/bx"]
 	path = vendor/bx
 	url = https://github.com/bkaradzic/bx.git
+[submodule "vendor/gwencs"]
+	path = vendor/gwencs
+	url = https://github.com/ming4883/gwen-dotnet.git
