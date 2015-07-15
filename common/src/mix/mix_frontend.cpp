@@ -19,6 +19,7 @@ namespace mix
     FrontendEvent::FrontendEvent (FrontendEventType::Enum _type)
         : Event (getEventTypeId(), finalize)
         , type (_type)
+        , touchid (0u)
     {
         params.location.x = 0.0f;
         params.location.y = 0.0f;
@@ -40,27 +41,39 @@ namespace mix
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchDown (float _x, float _y)
+    FrontendEvent* FrontendEvent::touchDown (float _x, float _y, size_t _touchid)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchDown);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->touchid = _touchid;
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchMove (float _x, float _y)
+    FrontendEvent* FrontendEvent::touchMove (float _x, float _y, size_t _touchid)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchMove);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->touchid = _touchid;
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchUp (float _x, float _y)
+    FrontendEvent* FrontendEvent::touchUp (float _x, float _y, size_t _touchid)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchUp);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->touchid = _touchid;
+        return _this;
+    }
+
+    FrontendEvent* FrontendEvent::touchCancel (float _x, float _y, size_t _touchid)
+    {
+        FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchCancel);
+        _this->params.location.x = _x;
+        _this->params.location.y = _y;
+        _this->touchid = _touchid;
         return _this;
     }
 }

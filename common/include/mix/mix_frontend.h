@@ -16,8 +16,20 @@ namespace FrontendEventType
         TouchDown,
         TouchMove,
         TouchUp,
+        TouchCancel,
     };
 } // namespace FrontendEventType
+
+namespace FrontendMouseId
+{
+    enum Enum
+    {
+        None    = 0u,
+        Left    = 1u,
+        Right   = 2u,
+        Middle  = 4u,
+    };
+} // namespace FrontendMouseId
 
 
 /*! Frontend related events.
@@ -31,16 +43,24 @@ public:
 public:
     FrontendEventType::Enum type;
     
+    /*! Valid only if type is one of the touch relative events.
+        On Windows desktop it will be one of the value of FrontendMouseId::Enum;
+        otherwise it will be the platform specific touch identifier.
+        */
+    size_t touchid;
+
     union
     {
         struct
         {
             float x, y;
         } location;
+
         struct
         {
             int w, h;
         } size;
+
     } params;
 
     FrontendEvent (FrontendEventType::Enum _type);
@@ -52,13 +72,16 @@ public:
     static FrontendEvent* closed ();
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchDown
-    static FrontendEvent* touchDown (float _x, float _y);
+    static FrontendEvent* touchDown (float _x, float _y, size_t touchid);
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchMove
-    static FrontendEvent* touchMove (float _x, float _y);
+    static FrontendEvent* touchMove (float _x, float _y, size_t touchid);
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchUp
-    static FrontendEvent* touchUp (float _x, float _y);
+    static FrontendEvent* touchUp (float _x, float _y, size_t touchid);
+
+    //! Create a FrontendEvent with type = FrontendEventType::TouchCancel
+    static FrontendEvent* touchCancel (float _x, float _y, size_t touchid);
 
 };
 

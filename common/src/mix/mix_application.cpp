@@ -75,13 +75,13 @@ namespace mix
     {
         return ms_inst;
     }
-	
-	Application::Application()
-	{
+    
+    Application::Application()
+    {
         m_backbufferWidth = 0;
         m_backbufferHeight = 0;
-		ms_inst = this;
-	}
+        ms_inst = this;
+    }
 
     Application::~Application()
     {
@@ -121,16 +121,16 @@ namespace mix
         m_backbufferWidth  = _w;
         m_backbufferHeight = _h;
     }
-	
-	int Application::getBackbufferWidth()
-	{
-		return m_backbufferWidth;
-	}
-	
-	int Application::getBackbufferHeight()
-	{
-		return m_backbufferHeight;
-	}
+    
+    int Application::getBackbufferWidth()
+    {
+        return m_backbufferWidth;
+    }
+    
+    int Application::getBackbufferHeight()
+    {
+        return m_backbufferHeight;
+    }
 
     Result Application::pushEvent (Event* _event)
     {
