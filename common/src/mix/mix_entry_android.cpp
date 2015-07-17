@@ -27,9 +27,6 @@ extern "C" {
         pd.backBufferDS 	= NULL;
         bgfx::setPlatformData (pd);
 
-        mix::Log::i ("app", "bgfx::renderFrame");
-        bgfx::renderFrame();
-
         mix::Log::i ("app", "bgfx::init");
         bgfx::init();
 
@@ -74,12 +71,32 @@ extern "C" {
         bgfx::shutdown();
     }
 
-    JNIMETHOD (void, handleFrontendEvent) (JNIEnv* env, jobject cls, jint evt, jfloat param0, jfloat param1)
+    JNIMETHOD (void, handleFrontendEvent) (JNIEnv* env, jobject cls, jint evt, jint touchid, jfloat param0, jfloat param1)
     {
         if (evt == mix::FrontendEventType::Resized)
         {
             mix::theApp()->setBackbufferSize ((int)param0, (int)param1);
             mix::theApp()->pushEvent (mix::FrontendEvent::resized ((int)param0, (int)param1));
+        }
+		
+		if (evt == mix::FrontendEventType::TouchDown)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (param0, param1, (size_t)touchid));
+        }
+		
+		if (evt == mix::FrontendEventType::TouchUp)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchUp (param0, param1, (size_t)touchid));
+        }
+		
+		if (evt == mix::FrontendEventType::TouchMove)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchMove (param0, param1, (size_t)touchid));
+        }
+		
+		if (evt == mix::FrontendEventType::TouchCancel)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel (param0, param1, (size_t)touchid));
         }
 
         //mix::theApp()->processQueuedEvents();

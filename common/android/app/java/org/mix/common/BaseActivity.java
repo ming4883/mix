@@ -6,7 +6,7 @@ import android.content.DialogInterface;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Surface;
+import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -42,6 +42,7 @@ public class BaseActivity extends android.app.Activity {
         TouchDown,
         TouchMove,
         TouchUp,
+        TouchCancel,
     }
 
     public enum NativeApplicationEvent
@@ -61,7 +62,7 @@ public class BaseActivity extends android.app.Activity {
         public static native void handleInit();
         public static native void handleUpdate();
         public static native void handleQuit();
-        public static native void handleFrontendEvent(int evt, float param0, float param1);
+        public static native void handleFrontendEvent(int evt, int touchid, float param0, float param1);
         public static native void handleApplicationEvent(int evt);
 
         @Override
@@ -95,7 +96,7 @@ public class BaseActivity extends android.app.Activity {
             if (m_nativeState != NativeState.Running)
                 return;
 
-            NativeCode.handleApplicationEvent (NativeApplicationEvent.WillEnterBackground.ordinal());
+            NativeCode.handleApplicationEvent(NativeApplicationEvent.WillEnterBackground.ordinal());
             m_nativeState = NativeState.Paused;
         }
 
@@ -145,11 +146,57 @@ public class BaseActivity extends android.app.Activity {
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
             log("surfaceChanged(" + String.valueOf(width) + "," + String.valueOf(height) +")");
-            NativeCode.handleFrontendEvent (NativeFrontendEvent.Resized.ordinal(), (float)width, (float)height);
+            NativeCode.handleFrontendEvent(NativeFrontendEvent.Resized.ordinal(), 0, (float) width, (float) height);
         }
 
         public void onDrawFrame(GL10 gl) {
             nativeCode.doFrame();
+        }
+
+        @Override
+        public boolean onTouchEvent (MotionEvent evt) {
+
+            // https://developer.android.com/training/gestures/multi.html
+            // http://www.vogella.com/tutorials/AndroidTouch/article.html
+            int actionType = evt.getActionMasked();
+            int actionIndex = evt.getActionIndex();
+
+            if (MotionEvent.ACTION_DOWN==actionType||MotionEvent.ACTION_POINTER_DOWN==actionType) {
+                int touchId = evt.getPointerId(actionIndex);
+                NativeCode.handleFrontendEvent(NativeFrontendEvent.TouchDown.ordinal(), touchId, evt.getX(actionIndex), evt.getY(actionIndex));
+            }
+            if (MotionEvent.ACTION_UP==actionType||MotionEvent.ACTION_POINTER_UP==actionType) {
+                int touchId = evt.getPointerId(actionIndex);
+                NativeCode.handleFrontendEvent(NativeFrontendEvent.TouchUp.ordinal(), touchId, evt.getX(actionIndex), evt.getY(actionIndex));
+            }
+
+            if (MotionEvent.ACTION_MOVE==actionType) {
+                for (int i = 0; i < evt.getPointerCount(); ++i) {
+                    int touchId = evt.getPointerId(i);
+                    NativeCode.handleFrontendEvent(NativeFrontendEvent.TouchMove.ordinal(), touchId, evt.getX(i), evt.getY(i));
+                }
+            }
+
+            if (MotionEvent.ACTION_CANCEL==actionType) {
+                for (int i = 0; i < evt.getPointerCount(); ++i) {
+                    int touchId = evt.getPointerId(i);
+                    NativeCode.handleFrontendEvent(NativeFrontendEvent.TouchCancel.ordinal(), touchId, evt.getX(i), evt.getY(i));
+                }
+            }
+            /*
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("index=").append(evt.getActionIndex());
+            sb.append(";action=").append(MotionEvent.actionToString(evt.getAction()));
+
+            for (int i = 0; i < evt.getPointerCount(); ++i) {
+                int name = evt.getPointerId(i);
+                sb.append(";name=").append(name);
+            }
+
+            log (sb.toString());
+            */
+            return true;
         }
     }
 
@@ -157,6 +204,9 @@ public class BaseActivity extends android.app.Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        workarounds(); // various workarounds for the Android platform x_x
+
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -196,7 +246,7 @@ public class BaseActivity extends android.app.Activity {
 
     @Override
     public void onTrimMemory (int level) {
-        NativeCode.handleApplicationEvent (NativeApplicationEvent.LowMemory.ordinal());
+        NativeCode.handleApplicationEvent(NativeApplicationEvent.LowMemory.ordinal());
     }
 	
 	protected BaseView onCreateContentView() {
@@ -208,6 +258,18 @@ public class BaseActivity extends android.app.Activity {
             "gnustl_shared",
             //"main"
         };
+    }
+
+    protected void workarounds() {
+
+        // fix NoClassDefFoundError android.os.AsyncTask for google play service
+        // http://stackoverflow.com/questions/6968744/getting-noclassdeffounderror-android-os-asynctask
+        try {
+            Class.forName("android.os.AsyncTask");
+        }
+        catch(Throwable ignore) {
+            // ignored
+        }
     }
 
     public void loadNativeLibraries() {

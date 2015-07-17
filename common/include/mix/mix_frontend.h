@@ -44,8 +44,8 @@ public:
     FrontendEventType::Enum type;
     
     /*! Valid only if type is one of the touch relative events.
-        On Windows desktop it will be one of the value of FrontendMouseId::Enum;
-        otherwise it will be the platform specific touch identifier.
+        On Windows desktop it will be bit-flags of FrontendMouseId::Enum;
+        otherwise it will be the platform specific touch object / identifier (e.g. UITouch* on iOS).
         */
     size_t touchid;
 

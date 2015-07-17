@@ -135,7 +135,7 @@ public:
 
         mouseState |= _mouseid;
 
-        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (_mousex, _mousey, _mouseid));
+        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown ((float)_mousex, (float)_mousey, _mouseid));
     }
 
     void handle_WM_XBUTTONUP (UINT _msg, WPARAM _wParam, LPARAM _lParam)
@@ -150,9 +150,30 @@ public:
             ReleaseCapture ();
 
         if (isOutside (_mousex, _mousey))
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel (_mousex, _mousey, _mouseid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel ((float)_mousex, (float)_mousey, _mouseid));
         else
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (_mousex, _mousey, _mouseid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchUp ((float)_mousex, (float)_mousey, _mouseid));
+    }
+    
+    void handle_WM_MOUSEMOVE (WPARAM _wParam, LPARAM _lParam)
+    {
+        int _mousex = GET_X_LPARAM (_lParam), 
+            _mousey = GET_Y_LPARAM (_lParam);
+
+        if (GetCapture() == window && !isOutside (_mousex, _mousey))
+        {
+            size_t touchid = 0u;
+            if (_wParam & (MK_LBUTTON))
+                touchid |= mix::FrontendMouseId::Left;
+
+            if (_wParam & (MK_RBUTTON))
+                touchid |= mix::FrontendMouseId::Right;
+
+            if (_wParam & (MK_MBUTTON))
+                touchid |= mix::FrontendMouseId::Middle;
+
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchMove ((float)_mousex, (float)_mousey, touchid));
+        }
     }
     
     static LRESULT WINAPI windowMsgProc (HWND _hWnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
@@ -188,6 +209,12 @@ public:
                 case WM_MBUTTONUP:
                 {
                      _this->handle_WM_XBUTTONUP (_msg, _wParam, _lParam);
+                    break;
+                }
+
+                case WM_MOUSEMOVE:
+                {
+                    _this->handle_WM_MOUSEMOVE (_wParam, _lParam);
                     break;
                 }
             }
