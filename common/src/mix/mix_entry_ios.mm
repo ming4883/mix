@@ -1,6 +1,7 @@
 #if defined (MIX_IOS) && !defined (MIX_TESTS)
 
 #include <mix/mix_application.h>
+#include <mix/mix_frontend.h>
 
 #include <bgfx.h>
 #include <bgfxplatform.h>
@@ -66,24 +67,60 @@
     }
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesBegan:(NSSet *)_touches withEvent:(UIEvent *)_event
 {
-    BX_UNUSED(touches);
+    BX_UNUSED(_touches);
+
+    float _screenscale = [[UIScreen mainScreen] scale];
+    BX_UNUSED(_screenscale);
+
+    for (UITouch* _touch in _touches)
+    {
+        CGPoint _pt = [_touch locationInView:self];
+        _pt.x *= _screenscale;
+        _pt.y *= _screenscale;
+
+        printf ("%p begin %.1f, %.1f\n", _touch, _pt.x, _pt.y);
+    }
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesMoved:(NSSet *)_touches withEvent:(UIEvent *)_event
 {
-    BX_UNUSED(touches);
+    BX_UNUSED(_touches);
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesEnded:(NSSet *)_touches withEvent:(UIEvent *)_event
 {
-    BX_UNUSED(touches);
+    BX_UNUSED(_touches);
+
+    float _screenscale = [[UIScreen mainScreen] scale];
+    BX_UNUSED(_screenscale);
+
+    for (UITouch* _touch in _touches)
+    {
+        CGPoint _pt = [_touch locationInView:self];
+        _pt.x *= _screenscale;
+        _pt.y *= _screenscale;
+
+        printf ("%p end %.1f, %.1f\n", _touch, _pt.x, _pt.y);
+    }
 }
 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)touchesCancelled:(NSSet *)_touches withEvent:(UIEvent *)_event
 {
-    BX_UNUSED(touches);
+    BX_UNUSED(_touches);
+
+    float _screenscale = [[UIScreen mainScreen] scale];
+    BX_UNUSED(_screenscale);
+
+    for (UITouch* _touch in _touches)
+    {
+        CGPoint _pt = [_touch locationInView:self];
+        _pt.x *= _screenscale;
+        _pt.y *= _screenscale;
+
+        printf ("%p cancel %.1f, %.1f\n", _touch, _pt.x, _pt.y);
+    }
 }
 
 @end
@@ -146,16 +183,8 @@
     pd.backBufferDS     = NULL;
     bgfx::setPlatformData (pd);
 
-    mix::Log::i ("app", "bgfx::renderFrame");
-    bgfx::renderFrame();
-
     mix::Log::i ("app", "bgfx::init");
     bgfx::init();
-
-    mix::Log::i ("app", "bgfx::reset");
-    mix::theApp()->setBackbufferSize ((int)(scaleFactor * rect.size.width), (int)(scaleFactor * rect.size.height));
-
-    bgfx::reset (mix::theApp()->getBackbufferWidth(), mix::theApp()->getBackbufferHeight(), BGFX_RESET_NONE);
 
     mix::theApp()->preInit();
 
@@ -166,29 +195,40 @@
 
     mix::theApp()->postInit();
 
+    // raise a resize event manually
+    int backbufw = (int)(scaleFactor * rect.size.width);
+    int backbufh = (int)(scaleFactor * rect.size.height);
+    mix::theApp()->setBackbufferSize (backbufw, backbufh);
+
+    mix::theApp()->pushEvent (mix::FrontendEvent::resized (backbufw, backbufh));
+
     return YES;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     BX_UNUSED(application);
+    mix::theApp()->pushEvent (mix::ApplicationEvent::willEnterBackground());
     [m_view stop];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
     BX_UNUSED(application);
+    mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterBackground());
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     BX_UNUSED(application);
+    mix::theApp()->pushEvent (mix::ApplicationEvent::willEnterForeground());
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     BX_UNUSED(application);
     [m_view start];
+    mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterForeground());
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -198,6 +238,7 @@
 
     if (mix::theApp())
     {
+        mix::theApp()->pushEvent (mix::ApplicationEvent::terminating());
         mix::theApp()->preShutdown();
         mix::theApp()->shutdown();
         mix::theApp()->postShutdown();
