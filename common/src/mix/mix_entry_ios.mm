@@ -5,6 +5,7 @@
 
 #include <bgfx.h>
 #include <bgfxplatform.h>
+#include <map>
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -18,20 +19,27 @@
 @end
 
 @implementation mixView
+{
+    std::map<id, int> m_touchMappings;
+    int m_touchid;
+}
 
 + (Class)layerClass
 {
     return [CAEAGLLayer class];
 }
 
-- (id)initWithFrame:(CGRect)rect
+- (id)initWithFrame:(CGRect)_rect
 {
-    self = [super initWithFrame:rect];
+    self = [super initWithFrame:_rect];
 
     if (nil == self)
     {
         return nil;
     }
+
+    self.multipleTouchEnabled = YES;
+    m_touchid = 0;
 
     //CAEAGLLayer* layer = (CAEAGLLayer*)self.layer;
     //bgfx::iosSetEaglLayer (layer);
@@ -67,7 +75,47 @@
     }
 }
 
+- (void)touchMappingAdd: (UITouch *)_touch
+{
+    m_touchMappings[_touch] = m_touchid++;
+}
+
+- (void)touchMappingRemove: (UITouch *)_touch
+{
+    m_touchMappings.erase(_touch);
+
+    if (m_touchMappings.size() == 0)
+        m_touchid = 0;
+}
+
+- (int)touchMappingOf: (UITouch *)_touch
+{
+    if (m_touchMappings.count (_touch) == 0)
+        return -1;
+
+    return m_touchMappings[_touch];
+}
+
 - (void)touchesBegan:(NSSet *)_touches withEvent:(UIEvent *)_event
+{
+    BX_UNUSED(_touches);
+
+    float _screenscale = [[UIScreen mainScreen] scale];
+    BX_UNUSED(_screenscale);
+
+    for (UITouch* _touch in _touches)
+    {
+        [self touchMappingAdd:_touch];
+
+        CGPoint _pt = [_touch locationInView:self];
+        _pt.x *= _screenscale;
+        _pt.y *= _screenscale;
+
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchDown(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+    }
+}
+
+- (void)touchesMoved:(NSSet *)_touches withEvent:(UIEvent *)_event
 {
     BX_UNUSED(_touches);
 
@@ -80,13 +128,8 @@
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
 
-        printf ("%p begin %.1f, %.1f\n", _touch, _pt.x, _pt.y);
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchMove(_pt.x, _pt.y, [self touchMappingOf:_touch]));
     }
-}
-
-- (void)touchesMoved:(NSSet *)_touches withEvent:(UIEvent *)_event
-{
-    BX_UNUSED(_touches);
 }
 
 - (void)touchesEnded:(NSSet *)_touches withEvent:(UIEvent *)_event
@@ -102,7 +145,9 @@
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
 
-        printf ("%p end %.1f, %.1f\n", _touch, _pt.x, _pt.y);
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchUp(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+
+        [self touchMappingRemove:_touch];
     }
 }
 
@@ -119,7 +164,9 @@
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
 
-        printf ("%p cancel %.1f, %.1f\n", _touch, _pt.x, _pt.y);
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchCancel(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+
+        [self touchMappingRemove:_touch];
     }
 }
 
@@ -141,24 +188,24 @@
 @end
 
 @interface mixAppDelegate : UIResponder<UIApplicationDelegate>
+
+@end
+
+@implementation mixAppDelegate
 {
     UIWindow* m_window;
     mixView* m_view;
     mixViewController* m_viewcontroller;
 }
 
-@end
-
-@implementation mixAppDelegate
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (BOOL)application:(UIApplication *)_application didFinishLaunchingWithOptions:(NSDictionary *)_launchOptions
 {
-    BX_UNUSED(application, launchOptions);
+    BX_UNUSED(_application, _launchOptions);
     mix::Log::init();
 
-    CGRect rect = [ [UIScreen mainScreen] bounds];
-    m_window = [ [UIWindow alloc] initWithFrame: rect];
-    m_view = [ [mixView alloc] initWithFrame: rect];
+    CGRect _rect = [ [UIScreen mainScreen] bounds];
+    m_window = [ [UIWindow alloc] initWithFrame: _rect];
+    m_view = [ [mixView alloc] initWithFrame: _rect];
     m_viewcontroller = [[mixViewController alloc] init];
     m_viewcontroller.view = m_view;
 
@@ -196,44 +243,44 @@
     mix::theApp()->postInit();
 
     // raise a resize event manually
-    int backbufw = (int)(scaleFactor * rect.size.width);
-    int backbufh = (int)(scaleFactor * rect.size.height);
-    mix::theApp()->setBackbufferSize (backbufw, backbufh);
+    int _backbufw = (int)(scaleFactor * _rect.size.width);
+    int _backbufh = (int)(scaleFactor * _rect.size.height);
+    mix::theApp()->setBackbufferSize (_backbufw, _backbufh);
 
-    mix::theApp()->pushEvent (mix::FrontendEvent::resized (backbufw, backbufh));
+    mix::theApp()->pushEvent (mix::FrontendEvent::resized (_backbufw, _backbufh));
 
     return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void)applicationWillResignActive:(UIApplication *)_application
 {
-    BX_UNUSED(application);
+    BX_UNUSED(_application);
     mix::theApp()->pushEvent (mix::ApplicationEvent::willEnterBackground());
     [m_view stop];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
+- (void)applicationDidEnterBackground:(UIApplication *)_application
 {
-    BX_UNUSED(application);
+    BX_UNUSED(_application);
     mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterBackground());
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
+- (void)applicationWillEnterForeground:(UIApplication *)_application
 {
-    BX_UNUSED(application);
+    BX_UNUSED(_application);
     mix::theApp()->pushEvent (mix::ApplicationEvent::willEnterForeground());
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
+- (void)applicationDidBecomeActive:(UIApplication *)_application
 {
-    BX_UNUSED(application);
+    BX_UNUSED(_application);
     [m_view start];
     mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterForeground());
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
+- (void)applicationWillTerminate:(UIApplication *)_application
 {
-    BX_UNUSED(application);
+    BX_UNUSED(_application);
     [m_view stop];
 
     if (mix::theApp())
@@ -249,6 +296,12 @@
     bgfx::shutdown();
     
     mix::Log::shutdown();
+}
+
+- (void)applicationDidReceiveMemoryWarning:(UIApplication *)_application
+{
+    mix::theApp()->pushEvent (mix::ApplicationEvent::lowMemory());
+    mix::theApp()->processQueuedEvents();
 }
 
 - (void)dealloc
