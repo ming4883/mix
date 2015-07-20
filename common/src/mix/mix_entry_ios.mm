@@ -41,10 +41,22 @@
     self.multipleTouchEnabled = YES;
     m_touchid = 0;
 
-    //CAEAGLLayer* layer = (CAEAGLLayer*)self.layer;
-    //bgfx::iosSetEaglLayer (layer);
-
     return self;
+}
+
+- (void)layoutSubviews
+{
+    CGRect _rect = self.frame;
+
+    // raise a resize event manually
+    int _backbufw = (int)(self.contentScaleFactor * _rect.size.width);
+    int _backbufh = (int)(self.contentScaleFactor * _rect.size.height);
+    mix::theApp()->setBackbufferSize (_backbufw, _backbufh);
+
+    mix::theApp()->pushEvent (mix::FrontendEvent::resized (_backbufw, _backbufh));
+
+
+    //printf ("layoutSubviews %.1f, %.1f", _rect.size.width, _rect.size.height);
 }
 
 - (void)start
@@ -185,6 +197,17 @@
     return YES;
 }
 
+-(BOOL)shouldAutorotate
+{
+    return YES;
+}
+
+-(NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
+
+
 @end
 
 @interface mixAppDelegate : UIResponder<UIApplicationDelegate>
@@ -241,13 +264,6 @@
     }
 
     mix::theApp()->postInit();
-
-    // raise a resize event manually
-    int _backbufw = (int)(scaleFactor * _rect.size.width);
-    int _backbufh = (int)(scaleFactor * _rect.size.height);
-    mix::theApp()->setBackbufferSize (_backbufw, _backbufh);
-
-    mix::theApp()->pushEvent (mix::FrontendEvent::resized (_backbufw, _backbufh));
 
     return YES;
 }
