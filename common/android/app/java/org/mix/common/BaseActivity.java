@@ -10,6 +10,9 @@ import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -207,6 +210,8 @@ public class BaseActivity extends android.app.Activity {
 
         workarounds(); // various workarounds for the Android platform x_x
 
+        log("Android runtime = " + getCurrentRuntime());
+
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -269,6 +274,34 @@ public class BaseActivity extends android.app.Activity {
         }
         catch(Throwable ignore) {
             // ignored
+        }
+    }
+
+    private String getCurrentRuntime() {
+        final String SELECT_RUNTIME_PROPERTY = "persist.sys.dalvik.vm.lib";
+
+        try {
+            Class<?> systemProperties = Class.forName("android.os.SystemProperties");
+            try {
+                Method get = systemProperties.getMethod("get",
+                        String.class, String.class);
+                if (get == null) {
+                    return "WTF?!";
+                }
+                try {
+                    return (String)get.invoke(systemProperties, SELECT_RUNTIME_PROPERTY, "Dalvik");
+                } catch (IllegalAccessException e) {
+                    return "IllegalAccessException";
+                } catch (IllegalArgumentException e) {
+                    return "IllegalArgumentException";
+                } catch (InvocationTargetException e) {
+                    return "InvocationTargetException";
+                }
+            } catch (NoSuchMethodException e) {
+                return "SystemProperties.get(String key, String def) method is not found";
+            }
+        } catch (ClassNotFoundException e) {
+            return "SystemProperties class is not found";
         }
     }
 
