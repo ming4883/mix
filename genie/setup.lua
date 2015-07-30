@@ -1,13 +1,13 @@
 dofile ("gradle/_gradle.lua")
 
-BGFX_DIR = path.getabsolute ("../../vendor/bgfx/")
-BX_DIR =  path.getabsolute ("../../vendor/bx/")
+BGFX_DIR = path.getabsolute ("../vendor/bgfx/")
+BX_DIR =  path.getabsolute ("../vendor/bx/")
 
 language ("C++")
 configurations ({"Debug", "Release"})
 
 -- bx toolchain
-dofile (path.join (BX_DIR, "scripts/toolchain.lua"))
+dofile ("toolchain.lua")
 
 if not toolchain ("", path.join(BGFX_DIR, "3rdparty")) then
 	print ("toolchain() failed")
@@ -29,7 +29,8 @@ end
 
 
 -- output location
-local OUTPATH = path.join(path.getabsolute ("../../build"), solution().name, _ACTION)
+print (path.getabsolute ("./"))
+local OUTPATH = path.join(path.getabsolute ("../build"), solution().name, _ACTION)
 
 if mix_is_ios() then
 	OUTPATH = OUTPATH .. "_ios"
@@ -107,7 +108,7 @@ end
 
 
 local COMMOM_DIR = path.getabsolute ("../")
-local GTEST_DIR = path.getabsolute ("../../vendor/gtest")
+local GTEST_DIR = path.getabsolute ("../vendor/gtest")
 
 function mix_setup_common_app()
 
