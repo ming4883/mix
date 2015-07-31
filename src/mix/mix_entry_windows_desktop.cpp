@@ -224,7 +224,7 @@ public:
     }
 
 
-    bool init (const char* name, int w, int h)
+    bool init (const char* name, int x, int y, int w, int h)
     {
         WNDCLASSEXA wndCls = {0};
         
@@ -256,11 +256,11 @@ public:
         SetRect (&rect, 0, 0, windowWidth, windowHeight);
         AdjustWindowRectEx (&rect, dwStyle, FALSE, dwExStyle);
     
-        windowWidth = rect.right - rect.left;
-        windowHeight = rect.bottom - rect.top;
+        windowWidth     = rect.right - rect.left;
+        windowHeight    = rect.bottom - rect.top;
 
-        windowLeft = GetSystemMetrics (SM_CXSCREEN) / 2 - windowWidth / 2;
-        windowTop  = GetSystemMetrics (SM_CYSCREEN) / 2 - windowHeight / 2;
+        windowLeft      = x;
+        windowTop       = y;
 
         window = CreateWindowExA (dwExStyle, WNDCLASSNAME, name, dwStyle, windowLeft, windowTop, windowWidth, windowHeight, nullptr, nullptr, GetModuleHandle (nullptr), 0);
         SetWindowTextA (window, name);
@@ -304,22 +304,47 @@ int main (int argc, const char** argv)
         return -1;
     }
 
-    Window window;
-    
-    int surfaceWidth  = mix::theApp()->getBackbufferWidth()  == 0 ? 800 : mix::theApp()->getBackbufferWidth();
-    int surfaceHeight = mix::theApp()->getBackbufferHeight() == 0 ? 450 : mix::theApp()->getBackbufferHeight();
-    window.init ("mixApp", surfaceWidth, surfaceHeight);
-    
-    mix::Log::e ("app", "%d, %d", surfaceWidth, surfaceHeight);
-    mix::theApp()->setBackbufferSize (surfaceWidth, surfaceHeight);
+    Window _window;
 
-    bgfx::PlatformData pd;
-    pd.ndt				= NULL;
-    pd.nwh    			= window.window;
-    pd.context      	= NULL;
-    pd.backBuffer   	= NULL;
-    pd.backBufferDS 	= NULL;
-    bgfx::setPlatformData (pd);
+    const mix::FrontendDesc& _request = mix::theApp()->getMainFrontendDesc();
+    
+    const int _screenWidth = GetSystemMetrics (SM_CXSCREEN);
+    const int _screenHeight = GetSystemMetrics (SM_CYSCREEN);
+
+    int _surfaceWidth  = _request.width;
+    int _surfaceHeight  = _request.height;
+
+    if (_surfaceWidth == mix::FrontendDesc::SizeFullScreen) 
+        _surfaceWidth = _screenWidth;
+    else if (_surfaceWidth == mix::FrontendDesc::SizeAuto)
+        _surfaceWidth = _screenWidth / 2;
+
+    if (_surfaceHeight == mix::FrontendDesc::SizeFullScreen) 
+        _surfaceHeight = _screenHeight;
+    else if (_surfaceHeight == mix::FrontendDesc::SizeAuto)
+        _surfaceHeight = _screenHeight / 2;
+
+    int _surfaceX = _request.left;
+    int _surfaceY = _request.top;
+
+    if (_surfaceX == mix::FrontendDesc::PositionCentered)
+        _surfaceX = GetSystemMetrics (SM_CXSCREEN) / 2 - _surfaceWidth / 2;
+
+    if (_surfaceY == mix::FrontendDesc::PositionCentered)
+        _surfaceY = GetSystemMetrics (SM_CYSCREEN) / 2 - _surfaceHeight / 2;
+
+    _window.init ("MIX Framework", _surfaceX, _surfaceY, _surfaceWidth, _surfaceHeight);
+    
+    mix::Log::e ("app", "%d, %d", _surfaceWidth, _surfaceHeight);
+    mix::theApp()->setBackbufferSize (_surfaceWidth, _surfaceHeight);
+
+    bgfx::PlatformData _pd;
+    _pd.ndt             = NULL;
+    _pd.nwh             = _window.window;
+    _pd.context         = NULL;
+    _pd.backBuffer      = NULL;
+    _pd.backBufferDS    = NULL;
+    bgfx::setPlatformData (_pd);
 
     //logI ("bgfx::renderFrame");
     //bgfx::renderFrame();
@@ -338,7 +363,7 @@ int main (int argc, const char** argv)
     }
     mix::theApp()->postInit();
     
-    while (window.update())
+    while (_window.update())
     {
         mix::theApp()->preUpdate();
         mix::theApp()->update();
@@ -356,7 +381,7 @@ int main (int argc, const char** argv)
     mix::Log::e ("app", "bgfx::shutdown");
     bgfx::shutdown();
     
-    window.shutdown();
+    _window.shutdown();
 
     mix::Log::shutdown();
     

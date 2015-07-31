@@ -3,6 +3,7 @@
 
 #include <bx/platform.h>
 
+#include <mix/mix_frontend.h>
 #include <mix/mix_result.h>
 #include <mix/mix_event.h>
 #include <mix/mix_time.h>
@@ -47,11 +48,14 @@ class Application
 {
 
 public:
-	static Result cleanup();
+    static Result cleanup();
 
     static Application* get();
 
 public:
+    //! Set the requested main FrontendDesc. Invoke this method during the constructor.
+    void setMainFrontendDesc (const FrontendDesc& _desc);
+
 	//! Invoked when application startup
 	virtual Result init() = 0;
 	
@@ -69,6 +73,9 @@ public:
     virtual ~Application();
 
     void setBackbufferSize (int _w, int _h);
+
+    //! Return the width of the main Frontend
+    const FrontendDesc& getMainFrontendDesc();
 	
 	//! Return the width of the main surface
 	int getBackbufferWidth();
@@ -109,6 +116,7 @@ private:
 
     TimeSource m_timeSource;
     EventQueue m_eventQueue;
+    FrontendDesc m_frontendDesc;
     int m_backbufferWidth, m_backbufferHeight;
 };
 

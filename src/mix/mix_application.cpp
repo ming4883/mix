@@ -78,13 +78,17 @@ namespace mix
     
     Application::Application()
     {
-        m_backbufferWidth = 0;
-        m_backbufferHeight = 0;
+        m_frontendDesc = FrontendDesc::descFullScreen;
         ms_inst = this;
     }
 
     Application::~Application()
     {
+    }
+
+    void Application::setMainFrontendDesc (const FrontendDesc& _desc)
+    {
+        m_frontendDesc = _desc;
     }
 
     void Application::preInit()
@@ -118,18 +122,23 @@ namespace mix
 
     void Application::setBackbufferSize (int _w, int _h)
     {
-        m_backbufferWidth  = _w;
-        m_backbufferHeight = _h;
+        m_frontendDesc.width  = _w;
+        m_frontendDesc.height = _h;
+    }
+
+    const FrontendDesc& Application::getMainFrontendDesc()
+    {
+        return m_frontendDesc;
     }
     
     int Application::getBackbufferWidth()
     {
-        return m_backbufferWidth;
+        return m_frontendDesc.width;
     }
     
     int Application::getBackbufferHeight()
     {
-        return m_backbufferHeight;
+        return m_frontendDesc.height;
     }
 
     Result Application::pushEvent (Event* _event)

@@ -3,6 +3,22 @@
 
 namespace mix
 {
+    FrontendDesc FrontendDesc::descAuto = FrontendDesc()
+        .setLeft (FrontendDesc::PositionCentered)
+        .setTop (FrontendDesc::PositionCentered)
+        .setWidth (FrontendDesc::SizeAuto)
+        .setHeight (FrontendDesc::SizeAuto)
+        .setMsaaLevel (0)
+        .setFullScreen (false);
+    
+    FrontendDesc FrontendDesc::descFullScreen = FrontendDesc()
+        .setLeft (0)
+        .setTop (0)
+        .setWidth (FrontendDesc::SizeFullScreen)
+        .setHeight (FrontendDesc::SizeFullScreen)
+        .setMsaaLevel (0)
+        .setFullScreen (true);
+
     EventTypeId FrontendEvent::getEventTypeId()
     {
         return EventTypeId ("FrontendEvent");

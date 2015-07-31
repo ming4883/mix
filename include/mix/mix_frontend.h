@@ -31,6 +31,33 @@ namespace FrontendMouseId
     };
 } // namespace FrontendMouseId
 
+class FrontendDesc
+{
+public:
+    enum {
+        PositionCentered = -4096,
+        SizeFullScreen = 0,
+        SizeAuto = -1,
+    };
+
+    int left;
+    int top;
+    int width;
+    int height;
+    int msaaLevel;
+    bool fullscreen;
+
+    FrontendDesc& setLeft(int _val) {left = _val; return *this;}
+    FrontendDesc& setTop(int _val) {top = _val; return *this;}
+    FrontendDesc& setWidth(int _val) {width = _val; return *this;}
+    FrontendDesc& setHeight(int _val) {height = _val; return *this;}
+    FrontendDesc& setMsaaLevel(int _val) {msaaLevel = _val; return *this;}
+    FrontendDesc& setFullScreen(bool _val) {fullscreen = _val; return *this;}
+
+    static FrontendDesc descAuto;
+    static FrontendDesc descFullScreen;
+};
+
 
 /*! Frontend related events.
  */
