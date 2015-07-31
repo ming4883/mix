@@ -176,11 +176,11 @@ function mix_common_tests_project ()
 		
 		local grd = gradle()
 		
-		grd.manifest = path.join (COMMOM_DIR, "android/tests/AndroidManifest.xml")
+		grd.manifest = path.join (COMMOM_DIR, "src/mix/android/tests/AndroidManifest.xml")
 		
 		grd.java_srcdirs = {
-			path.join (COMMOM_DIR, "android/app/java"),
-			path.join (COMMOM_DIR, "android/tests/java"),
+			path.join (COMMOM_DIR, "src/mix/android/app/java"),
+			path.join (COMMOM_DIR, "src/mix/android/tests/java"),
 		}
 	end
 	
@@ -192,7 +192,7 @@ function mix_common_tests_project ()
 		defines { "MIX_IOS" }	
 		files {
 			path.join (COMMOM_DIR, "src/mix/*ios.mm"),
-			path.join (COMMOM_DIR, "ios/tests/info.plist"),
+			path.join (COMMOM_DIR, "src/mix/ios/tests/info.plist"),
 		}
 	end
 	
