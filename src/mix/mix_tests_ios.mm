@@ -25,7 +25,7 @@ int main (int _argc, char* _argv[])
     ::testing::UnitTest::GetInstance()->listeners().Append (new mix::TestListener);
 
     int result = RUN_ALL_TESTS();
-    mix::Log::final();
+    mix::Log::shutdown();
     
     return result;
 }

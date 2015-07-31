@@ -1,3 +1,11 @@
+if nil == PROJECT_DIR then
+	error ("global variable 'PROJECT_DIR' is not defined prior setup.lua")
+end
+
+if nil == MIX_DIR then
+	error ("global variable 'MIX_DIR' is not defined prior setup.lua")
+end
+
 dofile ("gradle/_gradle.lua")
 
 BGFX_DIR = path.getabsolute ("../vendor/bgfx/")
@@ -29,8 +37,8 @@ end
 
 
 -- output location
-print (path.getabsolute ("./"))
-local OUTPATH = path.join(path.getabsolute ("../build"), solution().name, _ACTION)
+--print (path.getabsolute ("./"))
+local OUTPATH = path.join(PROJECT_DIR, "build", _ACTION)
 
 if mix_is_ios() then
 	OUTPATH = OUTPATH .. "_ios"
@@ -107,8 +115,7 @@ function mix_setup_app ()
 end
 
 
-local COMMOM_DIR = path.getabsolute ("../")
-local GTEST_DIR = path.getabsolute ("../vendor/gtest")
+local GTEST_DIR = path.getabsolute (path.join (MIX_DIR, "vendor", "gtest"))
 
 function mix_setup_common_app()
 
@@ -116,16 +123,16 @@ function mix_setup_common_app()
 	
 	
 	files {
-		path.join (COMMOM_DIR, "include/mix/*.h"),
-		path.join (COMMOM_DIR, "src/mix/*.cpp"),
+		path.join (MIX_DIR, "include/mix/*.h"),
+		path.join (MIX_DIR, "src/mix/*.cpp"),
 	}
 	
 	excludes {
-		path.join (COMMOM_DIR, "src/mix/mix_tests*"),
+		path.join (MIX_DIR, "src/mix/mix_tests*"),
 	}
 	
 	includedirs {
-		path.join (COMMOM_DIR, "include/")
+		path.join (MIX_DIR, "include/")
 	}
 	
 	links {
@@ -141,7 +148,7 @@ function mix_setup_common_app()
 	end
 	
 	if mix_is_ios() then
-		files { path.join (COMMOM_DIR, "src/mix/*ios.mm") }
+		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
 		defines { "MIX_IOS" }
 	end
 	
@@ -155,12 +162,12 @@ function mix_common_tests_project ()
 	includedirs {
 		path.join (BX_DIR, "include"),
 		path.join (GTEST_DIR, "fused-src"),
-		path.join (COMMOM_DIR, "include/")
+		path.join (MIX_DIR, "include/")
 	}
 	
 	files {
-		path.join (COMMOM_DIR, "include/mix/*.h"),
-		path.join (COMMOM_DIR, "src/mix/*.cpp"),
+		path.join (MIX_DIR, "include/mix/*.h"),
+		path.join (MIX_DIR, "src/mix/*.cpp"),
 		path.join (GTEST_DIR, "fused-src/gtest/gtest.h"),
 		path.join (GTEST_DIR, "fused-src/gtest/gtest-all.cc"),
 	}
@@ -176,11 +183,11 @@ function mix_common_tests_project ()
 		
 		local grd = gradle()
 		
-		grd.manifest = path.join (COMMOM_DIR, "src/mix/android/tests/AndroidManifest.xml")
+		grd.manifest = path.join (MIX_DIR, "src/mix/android/tests/AndroidManifest.xml")
 		
 		grd.java_srcdirs = {
-			path.join (COMMOM_DIR, "src/mix/android/app/java"),
-			path.join (COMMOM_DIR, "src/mix/android/tests/java"),
+			path.join (MIX_DIR, "src/mix/android/app/java"),
+			path.join (MIX_DIR, "src/mix/android/tests/java"),
 		}
 	end
 	
@@ -191,13 +198,13 @@ function mix_common_tests_project ()
 	if mix_is_ios() then
 		defines { "MIX_IOS" }	
 		files {
-			path.join (COMMOM_DIR, "src/mix/*ios.mm"),
-			path.join (COMMOM_DIR, "src/mix/ios/tests/info.plist"),
+			path.join (MIX_DIR, "src/mix/*ios.mm"),
+			path.join (MIX_DIR, "src/mix/ios/tests/info.plist"),
 		}
 	end
 	
 	excludes {
-		path.join (COMMOM_DIR, "src/mix/mix_entry*"),
+		path.join (MIX_DIR, "src/mix/mix_entry*"),
 	}
 	
 end
