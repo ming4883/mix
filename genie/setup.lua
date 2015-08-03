@@ -243,3 +243,8 @@ project ("bgfx-static")
 	end
 	
 	mix_setup_project()
+	
+-- bgfx shader compiler
+if mix_is_windows_desktop() then
+	dofile (path.join (BGFX_DIR, "scripts/shaderc.lua"))
+end
