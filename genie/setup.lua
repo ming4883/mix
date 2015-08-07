@@ -45,10 +45,12 @@ if mix_is_ios() then
 end
 
 location (OUTPATH)
-targetdir (path.join (path.getrelative (path.getabsolute ("."), OUTPATH), "out"))
+--targetdir (path.getrelative (path.getabsolute ("."), OUTPATH))
+targetdir (OUTPATH.."/bin")
 
 function mix_setup_project ()
 	local prj = project()
+	targetdir (path.join (OUTPATH, prj.name))
 	
 	uuid (os.uuid (prj.name))
 	
@@ -73,6 +75,10 @@ function mix_setup_project ()
 		buildoptions {
 			"-std=c++11"
 		}
+	end
+	
+	if mix_is_windows_desktop() then
+		--postbuildcommands {"mklink /d $(OutDir)\\runtime C:\\"}
 	end
 	
 end

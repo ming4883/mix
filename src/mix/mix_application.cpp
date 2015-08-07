@@ -79,11 +79,19 @@ namespace mix
     Application::Application()
     {
         m_frontendDesc = FrontendDesc::descFullScreen;
+        m_fileReader = nullptr;
+        m_fileWriter = nullptr;
+
+        Buffer _path (256);
+        mix::Log::i ("app", "pwd = %s", bx::pwd (_path.ptrAs<char>(), _path.size()));
+
         ms_inst = this;
     }
 
     Application::~Application()
     {
+        delete m_fileReader;
+        delete m_fileWriter;
     }
 
     void Application::setMainFrontendDesc (const FrontendDesc& _desc)
@@ -120,10 +128,60 @@ namespace mix
     {
     }
 
-    void Application::setBackbufferSize (int _w, int _h)
+    Result Application::load (Buffer& _outBuffer, const char* _filepath)
+    {
+        if (nullptr == m_fileReader)
+            return Result::fail ("File Reader is not supported on this platform");
+
+        if (0 != bx::open (m_fileReader, _filepath))
+            return Result::fail ("cannot open file");
+        
+        uint32_t _size = (uint32_t)bx::getSize (m_fileReader);
+        uint32_t _read = 0;
+
+        if (_size > 0)
+        {
+            Buffer _buf (_size, nullptr);
+            _read = (uint32_t)bx::read (m_fileReader, _buf.ptr(), _size);
+            _outBuffer = std::move (_buf);
+        }
+
+        bx::close (m_fileReader);
+            
+        if (_size != _read)
+            return Result::fail ("inconsistent size in bx::read()");
+
+        return Result::ok();
+    }
+
+    Result Application::loadAsset (Buffer& _outBuffer, const char* _assetname)
+    {
+        mix::StringFormatter _filepath;
+
+        {
+            Result _ret = load (_outBuffer, _filepath.format ("runtime/%s", _assetname));
+            if (_ret.isOK())
+                return _ret;
+        }
+        {
+            Result _ret = load (_outBuffer, _filepath.format ("%s/runtime/%s", getAppId(), _assetname));
+            if (_ret.isOK())
+                return _ret;
+        }
+        
+        return Result::fail ("asset not found");
+    }
+
+    void Application::platformSetBackbufferSize (int _w, int _h)
     {
         m_frontendDesc.width  = _w;
         m_frontendDesc.height = _h;
+    }
+
+    void Application::platformSetFileRW (bx::FileReaderI* _reader, bx::FileWriterI* _writer)
+    {
+        m_fileReader = _reader;
+        m_fileWriter = _writer;
     }
 
     const FrontendDesc& Application::getMainFrontendDesc()
@@ -131,16 +189,6 @@ namespace mix
         return m_frontendDesc;
     }
     
-    int Application::getBackbufferWidth()
-    {
-        return m_frontendDesc.width;
-    }
-    
-    int Application::getBackbufferHeight()
-    {
-        return m_frontendDesc.height;
-    }
-
     Result Application::pushEvent (Event* _event)
     {
         return m_eventQueue.push (_event);

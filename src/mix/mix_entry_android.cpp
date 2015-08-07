@@ -75,7 +75,7 @@ extern "C" {
     {
         if (evt == mix::FrontendEventType::Resized)
         {
-            mix::theApp()->setBackbufferSize ((int)param0, (int)param1);
+            mix::theApp()->platformSetBackbufferSize ((int)param0, (int)param1);
             mix::theApp()->pushEvent (mix::FrontendEvent::resized ((int)param0, (int)param1));
         }
 		

@@ -78,7 +78,7 @@ public:
                     mix::theApp()->pushEvent (mix::FrontendEvent::resized (_fnw, _fnh));
                 }
                         
-                mix::theApp()->setBackbufferSize (_fnw, _fnh);
+                mix::theApp()->platformSetBackbufferSize (_fnw, _fnh);
                         
                 lastW = _fnw;
                 lastH = _fnh;
@@ -304,6 +304,8 @@ int main (int argc, const char** argv)
         return -1;
     }
 
+    mix::theApp()->platformSetFileRW (new bx::CrtFileReader, new bx::CrtFileWriter);
+
     Window _window;
 
     const mix::FrontendDesc& _request = mix::theApp()->getMainFrontendDesc();
@@ -336,7 +338,7 @@ int main (int argc, const char** argv)
     _window.init ("MIX Framework", _surfaceX, _surfaceY, _surfaceWidth, _surfaceHeight);
     
     mix::Log::e ("app", "%d, %d", _surfaceWidth, _surfaceHeight);
-    mix::theApp()->setBackbufferSize (_surfaceWidth, _surfaceHeight);
+    mix::theApp()->platformSetBackbufferSize (_surfaceWidth, _surfaceHeight);
 
     bgfx::PlatformData _pd;
     _pd.ndt             = NULL;
