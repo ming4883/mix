@@ -51,7 +51,7 @@
     // raise a resize event manually
     int _backbufw = (int)(self.contentScaleFactor * _rect.size.width);
     int _backbufh = (int)(self.contentScaleFactor * _rect.size.height);
-    mix::theApp()->setBackbufferSize (_backbufw, _backbufh);
+    mix::theApp()->platformSetBackbufferSize (_backbufw, _backbufh);
 
     mix::theApp()->pushEvent (mix::FrontendEvent::resized (_backbufw, _backbufh));
 
