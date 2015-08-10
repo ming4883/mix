@@ -76,11 +76,6 @@ function mix_setup_project ()
 			"-std=c++11"
 		}
 	end
-	
-	if mix_is_windows_desktop() then
-		--postbuildcommands {"mklink /d $(OutDir)\\runtime C:\\"}
-	end
-	
 end
 
 function mix_setup_staticlib ()
@@ -117,6 +112,15 @@ function mix_setup_app ()
 			"gdi32",
 			"psapi",
 		}
+		--postbuildcommands {"mklink /d $(OutDir)\\runtime C:\\"}
+	end
+	
+	if mix_is_android() then
+		local asset_dir = path.join ("../runtime/", project().name, "android")
+		if os.isdir (asset_dir) then
+			local grd = gradle()
+			grd.assets_srcdirs = {asset_dir}
+		end
 	end
 end
 
@@ -133,12 +137,26 @@ function mix_setup_common_app()
 		path.join (MIX_DIR, "src/mix/*.cpp"),
 	}
 	
+	-- zlib & minizip
+	local zlib_dir = path.join (MIX_DIR, "vendor", "zlib")
+	local minizip_dir = path.join (zlib_dir, "contrib", "minizip")
+	
+	files {
+		path.join (zlib_dir, "*.c"),
+		path.join (zlib_dir, "*.h"),
+		path.join (minizip_dir, "unzip.c"), path.join (minizip_dir, "ioapi.c"),
+		path.join (minizip_dir, "unzip.h"), path.join (minizip_dir, "ioapi.h"),
+	}
+	
+	defines { "IOAPI_NO_64" }
+	
 	excludes {
 		path.join (MIX_DIR, "src/mix/mix_tests*"),
 	}
 	
 	includedirs {
-		path.join (MIX_DIR, "include/")
+		path.join (MIX_DIR, "include/"),
+		path.join (zlib_dir)
 	}
 	
 	links {

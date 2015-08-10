@@ -7,3 +7,6 @@
 [submodule "vendor/gwencs"]
 	path = vendor/gwencs
 	url = https://github.com/ming4883/gwen-dotnet.git
+[submodule "vendor/zlib"]
+	path = vendor/zlib
+	url = https://github.com/madler/zlib.git

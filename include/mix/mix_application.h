@@ -2,8 +2,8 @@
 #define MIX_APPLICATION_H
 
 #include <bx/platform.h>
-#include <bx/readerwriter.h>
 
+#include <mix/mix_asset.h>
 #include <mix/mix_frontend.h>
 #include <mix/mix_result.h>
 #include <mix/mix_event.h>
@@ -86,12 +86,6 @@ public:
     //! Push an Event to the Application for processing
     Result pushEvent (Event* _event);
 
-    //! Load a file into the _outBuffer
-    Result load (Buffer& _outBuffer, const char* _filepath);
-
-    //! Load an asset into the _outBuffer
-    Result loadAsset (Buffer& _outBuffer, const char* _assetname);
-
 public:
     //! Perform common tasks before Application::init()
     void preInit();
@@ -117,17 +111,12 @@ public:
     //! Reserved for platform implementation
     void platformSetBackbufferSize (int _w, int _h);
 
-    //! Reserved for platform implementation
-    void platformSetFileRW (bx::FileReaderI* _reader, bx::FileWriterI* _writer);
-
 private:
     static Application* ms_inst;
 
     TimeSource m_timeSource;
     EventQueue m_eventQueue;
     FrontendDesc m_frontendDesc;
-    bx::FileReaderI* m_fileReader;
-    bx::FileWriterI* m_fileWriter;
 };
 
 template<class APP = Application>
