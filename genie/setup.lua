@@ -87,7 +87,31 @@ function mix_setup_sharedlib ()
 	kind ("SharedLib")
 	mix_setup_project()
 end
-		
+
+function mix_setup_zlib()
+
+	-- zlib & minizip
+	local zlib_dir = path.join (MIX_DIR, "vendor", "zlib")
+	local minizip_dir = path.join (zlib_dir, "contrib", "minizip")
+	
+	files {
+		path.join (zlib_dir, "*.c"),
+		path.join (zlib_dir, "*.h"),
+		path.join (minizip_dir, "unzip.c"), path.join (minizip_dir, "ioapi.c"),
+		path.join (minizip_dir, "unzip.h"), path.join (minizip_dir, "ioapi.h"),
+	}
+	
+	if not mix_is_windows_desktop() then
+		defines { "IOAPI_NO_64" }
+	end
+	
+	includedirs {
+		zlib_dir,
+		minizip_dir,
+	}
+	
+end
+
 function mix_setup_app ()
 	kind ("WindowedApp")
 	mix_setup_project()
@@ -114,14 +138,6 @@ function mix_setup_app ()
 		}
 		--postbuildcommands {"mklink /d $(OutDir)\\runtime C:\\"}
 	end
-	
-	if mix_is_android() then
-		local asset_dir = path.join ("../runtime/", project().name, "android")
-		if os.isdir (asset_dir) then
-			local grd = gradle()
-			grd.assets_srcdirs = {asset_dir}
-		end
-	end
 end
 
 
@@ -131,24 +147,10 @@ function mix_setup_common_app()
 
 	mix_setup_app()
 	
-	
 	files {
 		path.join (MIX_DIR, "include/mix/*.h"),
 		path.join (MIX_DIR, "src/mix/*.cpp"),
 	}
-	
-	-- zlib & minizip
-	local zlib_dir = path.join (MIX_DIR, "vendor", "zlib")
-	local minizip_dir = path.join (zlib_dir, "contrib", "minizip")
-	
-	files {
-		path.join (zlib_dir, "*.c"),
-		path.join (zlib_dir, "*.h"),
-		path.join (minizip_dir, "unzip.c"), path.join (minizip_dir, "ioapi.c"),
-		path.join (minizip_dir, "unzip.h"), path.join (minizip_dir, "ioapi.h"),
-	}
-	
-	defines { "IOAPI_NO_64" }
 	
 	excludes {
 		path.join (MIX_DIR, "src/mix/mix_tests*"),
@@ -156,7 +158,6 @@ function mix_setup_common_app()
 	
 	includedirs {
 		path.join (MIX_DIR, "include/"),
-		path.join (zlib_dir)
 	}
 	
 	links {
@@ -165,6 +166,12 @@ function mix_setup_common_app()
 	
 	if mix_is_android() then
 		defines { "MIX_ANDROID" }
+		
+		local asset_dir = path.join ("../runtime/", project().name, "android")
+		if os.isdir (asset_dir) then
+			local grd = gradle()
+			grd.assets_srcdirs = {asset_dir}
+		end
 	end
 	
 	if mix_is_windows_desktop() then
@@ -175,6 +182,8 @@ function mix_setup_common_app()
 		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
 		defines { "MIX_IOS" }
 	end
+	
+	mix_setup_zlib()
 	
 end
 
@@ -230,6 +239,8 @@ function mix_common_tests_project ()
 	excludes {
 		path.join (MIX_DIR, "src/mix/mix_entry*"),
 	}
+	
+	mix_setup_zlib()
 	
 end
 

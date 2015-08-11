@@ -38,6 +38,22 @@ private:
 
 };
 
+class Utf8Buffer : public Buffer
+{
+public:
+    
+    /*! Construct with a utf8 encoded string, the Buffer is allocated to _contentSize
+        and copy the contents at _contentPtr if it is not nullptr.
+     */
+    Utf8Buffer (const char* _utf8str);
+
+    const char* c_str() const 
+    {
+        return ptrAs<char>();
+    }
+
+};
+
 } // namespace mix
 
 #endif // MIX_STRING_H

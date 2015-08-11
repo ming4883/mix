@@ -9,4 +9,9 @@ StringFormatter::StringFormatter (uint32_t _initialBufferSize)
 
 }
 
+Utf8Buffer::Utf8Buffer (const char* _utf8Str)
+    : Buffer (strlen (_utf8Str) + 1, (const uint8_t*)_utf8Str)
+{
+}
+
 }

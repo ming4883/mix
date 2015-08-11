@@ -76,13 +76,6 @@ namespace mix
             if (_ret.isOK())
                 return _ret;
         }
-
-        // for running in debugger with link_for_dev.bat
-        {
-            Result _ret = load (_outBuffer, _filepath.format ("%s/runtime/%s", theApp()->getAppId(), _assetname));
-            if (_ret.isOK())
-                return _ret;
-        }
         
         return Result::fail ("asset not found");
     }

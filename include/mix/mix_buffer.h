@@ -13,8 +13,8 @@ public:
     //! Default constructor, leave the Buffer empty.
     Buffer (void);
 
-    /*! Construct with size and optional contents, the Buffer is allocated to _contentSize
-        and copy the contents at _contentPtr if it is not nullptr.
+    /*! Construct with an utf-8 string, the Buffer is allocated to just fit for holding the string
+        and copy its contents.
      */
     Buffer (uint32_t _contentSize, const uint8_t* _contentPtr = nullptr);
 
