@@ -13,9 +13,9 @@ namespace mix
 class Asset
 {
 public:
-    static void init();
+    static void init (void* platformData = 0);
 
-    static void shutdown();
+    static void shutdown (void);
 
     static Result load (Buffer& _outBuffer, const char* _assetname);
 

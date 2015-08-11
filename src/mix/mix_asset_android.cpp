@@ -5,11 +5,12 @@
 
 namespace mix
 {
-    void Asset::init()
+    void Asset::init (void* platformData)
     {
+
     }
 
-    void Asset::shutdown()
+    void Asset::shutdown (void)
     {
     }
 

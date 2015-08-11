@@ -1,5 +1,6 @@
 package org.mix.common;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -62,7 +63,7 @@ public class BaseActivity extends android.app.Activity {
     {
         private NativeState m_nativeState = NativeState.None;
 
-        public static native void handleInit();
+        public static native void handleInit(String apkLocation);
         public static native void handleUpdate();
         public static native void handleQuit();
         public static native void handleFrontendEvent(int evt, int touchid, float param0, float param1);
@@ -113,9 +114,9 @@ public class BaseActivity extends android.app.Activity {
             m_nativeState = NativeState.Running;
         }
 
-        public synchronized void doFrame() {
+        public synchronized void doFrame(Context context) {
             if (NativeState.Starting == m_nativeState) {
-                handleInit();
+                handleInit(context.getApplicationInfo().sourceDir);
                 m_nativeState = NativeState.Running;
             }
             else if (NativeState.Running == m_nativeState) {
@@ -153,7 +154,7 @@ public class BaseActivity extends android.app.Activity {
         }
 
         public void onDrawFrame(GL10 gl) {
-            nativeCode.doFrame();
+            nativeCode.doFrame(getContext());
         }
 
         @Override
@@ -211,6 +212,7 @@ public class BaseActivity extends android.app.Activity {
         workarounds(); // various workarounds for the Android platform x_x
 
         log("Android runtime = " + getCurrentRuntime());
+        log("APK path = " + getApplicationInfo().sourceDir);
 
         super.onCreate(savedInstanceState);
 

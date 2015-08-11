@@ -15,9 +15,13 @@
 // JNI native method
 extern "C" {
     
-    JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls)
+    JNIMETHOD (void, handleInit) (JNIEnv* env, jobject cls, jstring jApkLocation)
     {
         mix::Log::init();
+
+        const char* apkLoc = env->GetStringUTFChars (jApkLocation, 0);
+        mix::Asset::init ((void*)apkLoc);
+        env->ReleaseStringUTFChars (jApkLocation, apkLoc);
 
         bgfx::PlatformData pd;
         pd.ndt				= NULL;
@@ -66,6 +70,7 @@ extern "C" {
             mix::theApp()->postShutdown();
         }
         
+        mix::Asset::shutdown();
         mix::Log::i ("app", "bgfx::shutdown");
         mix::Log::shutdown();
         bgfx::shutdown();

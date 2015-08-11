@@ -3,11 +3,11 @@
 namespace mix
 {
 #if 0
-    void Asset::init()
+    void Asset::init (void* platformData)
     {
     }
 
-    void Asset::shutdown()
+    void Asset::shutdown (void)
     {
     }
 #endif
