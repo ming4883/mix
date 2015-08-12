@@ -30,9 +30,6 @@ namespace mix
         //! Load all content of the raw path _filepath into _outBuffer
         Result load (Buffer& _outBuffer, const char* _filepath)
         {
-            if (nullptr == m_fileReader)
-                return Result::fail ("File Reader is not supported on this platform");
-
             if (0 != bx::open (m_fileReader, _filepath))
                 return Result::fail ("cannot open file");
         
@@ -70,12 +67,12 @@ namespace mix
     {
         mix::StringFormatter _filepath;
 
+         Result _ret;
+
         // for running in deployed layout
-        {
-            Result _ret = AssetImpl::sharedInst.load (_outBuffer, _filepath.format ("runtime/%s", _assetname));
-            if (_ret.isOK())
-                return _ret;
-        }
+        _ret = AssetImpl::sharedInst.load (_outBuffer, _filepath.format ("runtime/%s", _assetname));
+        if (_ret.isOK())
+            return _ret;
         
         return Result::fail ("asset not found");
     }

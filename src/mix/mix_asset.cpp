@@ -3,7 +3,7 @@
 namespace mix
 {
 #if 0
-    void Asset::init (void* platformData)
+    void Asset::init (void* _platformData)
     {
     }
 

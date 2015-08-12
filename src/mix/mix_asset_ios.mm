@@ -2,7 +2,7 @@
 
 namespace mix
 {
-    void Asset::init (void* platformData)
+    void Asset::init (void* _platformData)
     {
     }
 

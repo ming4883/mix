@@ -13,7 +13,7 @@ namespace mix
 class Asset
 {
 public:
-    static void init (void* platformData = 0);
+    static void init (void* _platformData = 0);
 
     static void shutdown (void);
 
