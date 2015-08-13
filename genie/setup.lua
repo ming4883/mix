@@ -88,28 +88,45 @@ function mix_setup_sharedlib ()
 	mix_setup_project()
 end
 
-function mix_setup_zlib()
-
-	-- zlib & minizip
-	local zlib_dir = path.join (MIX_DIR, "vendor", "zlib")
-	local minizip_dir = path.join (zlib_dir, "contrib", "minizip")
+local MIX_ZLIB_DIR = path.join (MIX_DIR, "vendor", "zlib")
+local MIX_MINIZIP_DIR = path.join (MIX_ZLIB_DIR, "contrib", "minizip")
 	
+function mix_add_zlib_project()
+
+	project ("mix_zlib")
+	kind ("StaticLib")
+	
+	-- zlib & minizip
 	files {
-		path.join (zlib_dir, "*.c"),
-		path.join (zlib_dir, "*.h"),
-		path.join (minizip_dir, "unzip.c"), path.join (minizip_dir, "ioapi.c"),
-		path.join (minizip_dir, "unzip.h"), path.join (minizip_dir, "ioapi.h"),
+		path.join (MIX_ZLIB_DIR, "*.c"),
+		path.join (MIX_ZLIB_DIR, "*.h"),
+		path.join (MIX_MINIZIP_DIR, "unzip.c"), path.join (MIX_MINIZIP_DIR, "ioapi.c"),
+		path.join (MIX_MINIZIP_DIR, "unzip.h"), path.join (MIX_MINIZIP_DIR, "ioapi.h"),
 	}
 	
 	if not mix_is_windows_desktop() then
 		defines { "IOAPI_NO_64" }
+	else
+		defines { "_CRT_NONSTDC_NO_WARNINGS" }
 	end
 	
 	includedirs {
-		zlib_dir,
-		minizip_dir,
+		MIX_ZLIB_DIR,
+		MIX_MINIZIP_DIR,
 	}
 	
+end
+
+function mix_use_zlib()
+
+	includedirs {
+		MIX_ZLIB_DIR,
+		MIX_MINIZIP_DIR,
+	}
+	
+	links {
+		"mix_zlib",
+	}
 end
 
 function mix_setup_app ()
@@ -161,7 +178,7 @@ function mix_setup_common_app()
 	}
 	
 	links {
-		"bgfx-static",
+		"bgfx_static",
 	}
 	
 	if mix_is_android() then
@@ -183,11 +200,11 @@ function mix_setup_common_app()
 		defines { "MIX_IOS" }
 	end
 	
-	mix_setup_zlib()
+	mix_use_zlib()
 	
 end
 
-function mix_common_tests_project ()
+function mix_add_unit_tests_project ()
 	project ("mix_common_tests")
 	kind ("WindowedApp")
 	mix_setup_project()
@@ -240,7 +257,7 @@ function mix_common_tests_project ()
 		path.join (MIX_DIR, "src/mix/mix_entry*"),
 	}
 	
-	mix_setup_zlib()
+	mix_use_zlib()
 	
 end
 
@@ -250,9 +267,9 @@ dofile (path.join (BGFX_DIR, "scripts/bgfx.lua"))
 function copyLib()
 end
 
-bgfxProject ("-static", "StaticLib", {})
+bgfxProject ("_static", "StaticLib", {})
 
-project ("bgfx-static")
+project ("bgfx_static")
 	if mix_is_android() then
 		links {
 			"EGL",
