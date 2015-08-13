@@ -103,6 +103,9 @@ function mix_add_zlib_project()
 		path.join (MIX_MINIZIP_DIR, "unzip.c"), path.join (MIX_MINIZIP_DIR, "ioapi.c"),
 		path.join (MIX_MINIZIP_DIR, "unzip.h"), path.join (MIX_MINIZIP_DIR, "ioapi.h"),
 	}
+	excludes {
+		path.join (MIX_ZLIB_DIR, "gz*"),
+	}
 	
 	if not mix_is_windows_desktop() then
 		defines { "IOAPI_NO_64" }
