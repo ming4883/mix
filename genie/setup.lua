@@ -98,10 +98,21 @@ function mix_add_zlib_project()
 	
 	-- zlib & minizip
 	files {
-		path.join (MIX_ZLIB_DIR, "*.c"),
-		path.join (MIX_ZLIB_DIR, "*.h"),
-		path.join (MIX_MINIZIP_DIR, "unzip.c"), path.join (MIX_MINIZIP_DIR, "ioapi.c"),
-		path.join (MIX_MINIZIP_DIR, "unzip.h"), path.join (MIX_MINIZIP_DIR, "ioapi.h"),
+		-- zlib
+		path.join (MIX_ZLIB_DIR, "adler32.c"),
+		path.join (MIX_ZLIB_DIR, "compress.c"),
+		path.join (MIX_ZLIB_DIR, "crc32.c"),
+		path.join (MIX_ZLIB_DIR, "deflate.c"),
+		path.join (MIX_ZLIB_DIR, "infback.c"),
+		path.join (MIX_ZLIB_DIR, "inffast.c"),
+		path.join (MIX_ZLIB_DIR, "inflate.c"),
+		path.join (MIX_ZLIB_DIR, "inftrees.c"),
+		path.join (MIX_ZLIB_DIR, "trees.c"),
+		path.join (MIX_ZLIB_DIR, "uncompr.c"),
+		path.join (MIX_ZLIB_DIR, "zutil.c"),
+		-- minizip
+		path.join (MIX_MINIZIP_DIR, "unzip.c"),
+		path.join (MIX_MINIZIP_DIR, "ioapi.c"),
 	}
 	excludes {
 		path.join (MIX_ZLIB_DIR, "gz*"),
@@ -200,6 +211,7 @@ function mix_setup_common_app()
 	
 	if mix_is_ios() then
 		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
+		debugdir (path.join ("../runtime/", project().name, "ios"))
 		defines { "MIX_IOS" }
 	end
 	
