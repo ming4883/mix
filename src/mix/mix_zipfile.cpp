@@ -45,7 +45,7 @@ namespace mix
         if (UNZ_OK != ::unzGetCurrentFileInfo (m_handle, &_fileInfo, nullptr, 0, nullptr, 0, nullptr, 0))
             return Result::fail ("failed to get current file info");
 
-        Buffer _buf (_fileInfo.uncompressed_size);
+        Buffer _buf ((uint32_t)_fileInfo.uncompressed_size);
 
         if (UNZ_OK != ::unzOpenCurrentFile (m_handle))
             return Result::fail ("failed to open current file");

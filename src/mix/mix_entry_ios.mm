@@ -225,6 +225,7 @@
 {
     BX_UNUSED(_application, _launchOptions);
     mix::Log::init();
+    mix::Asset::init (nullptr);
 
     CGRect _rect = [ [UIScreen mainScreen] bounds];
     m_window = [ [UIWindow alloc] initWithFrame: _rect];
@@ -310,7 +311,8 @@
 
     mix::Log::i ("app", "bgfx::shutdown");
     bgfx::shutdown();
-    
+
+    mix::Asset::shutdown();
     mix::Log::shutdown();
 }
 

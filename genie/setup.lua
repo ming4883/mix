@@ -42,6 +42,21 @@ local OUTPATH = path.join(PROJECT_DIR, "build", _ACTION)
 
 if mix_is_ios() then
 	OUTPATH = OUTPATH .. "_ios"
+	
+	-- patch the premake.xcode.getbuildcategory method to support .dat and .zip files as Resources
+	local old_getbuildcategory = premake.xcode.getbuildcategory
+	premake.xcode.getbuildcategory = function(node)
+		local cats = {
+			[".dat"] = "Resources",
+			[".zip"] = "Resources",
+		}
+		
+		local ret = cats[path.getextension(node.name)]
+		if (nil == ret) then
+			return old_getbuildcategory(node)
+		end
+		return ret;
+	end
 end
 
 location (OUTPATH)
@@ -211,7 +226,10 @@ function mix_setup_common_app()
 	
 	if mix_is_ios() then
 		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
-		debugdir (path.join ("../runtime/", project().name, "ios"))
+		local runtime_file = path.join ("../runtime/", project().name, "ios/runtime.zip");
+		if os.isfile (runtime_file) then
+			files {runtime_file}
+		end
 		defines { "MIX_IOS" }
 	end
 	

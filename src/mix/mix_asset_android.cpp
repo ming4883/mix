@@ -26,6 +26,7 @@ namespace mix
 		Result init (const char* _apkPath)
 		{
 			m_apkZipFile = new ZipFile (_apkPath);
+            return Result::ok();
 		}
 		
 		void shutdown (void)
