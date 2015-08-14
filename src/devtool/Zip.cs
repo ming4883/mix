@@ -20,7 +20,7 @@ public class Zip
 	{
 		foreach (string file in Directory.GetFiles (curr))
 		{
-			string key = file.Replace (root, "");
+			string key = file.Replace (root, "").Replace("\\", "/");
 			string val = Path.GetFullPath (file);
 			
 			if (string.Compare (val, m_output, true) == 0)
