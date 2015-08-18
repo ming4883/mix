@@ -35,6 +35,10 @@ function mix_is_ios()
 	return string.find (_ACTION, "xcode") ~= nil and "ios" == _OPTIONS["xcode"]
 end
 
+function mix_is_osx()
+	return string.find (_ACTION, "xcode") ~= nil and "osx" == _OPTIONS["xcode"]
+end
+
 
 -- output location
 --print (path.getabsolute ("./"))
@@ -42,6 +46,25 @@ local OUTPATH = path.join(PROJECT_DIR, "build", _ACTION)
 
 if mix_is_ios() then
 	OUTPATH = OUTPATH .. "_ios"
+	
+	-- patch the premake.xcode.getbuildcategory method to support .dat and .zip files as Resources
+	local old_getbuildcategory = premake.xcode.getbuildcategory
+	premake.xcode.getbuildcategory = function(node)
+		local cats = {
+			[".dat"] = "Resources",
+			[".zip"] = "Resources",
+		}
+		
+		local ret = cats[path.getextension(node.name)]
+		if (nil == ret) then
+			return old_getbuildcategory(node)
+		end
+		return ret;
+	end
+end
+
+if mix_is_osx() then
+	OUTPATH = OUTPATH .. "_osx"
 	
 	-- patch the premake.xcode.getbuildcategory method to support .dat and .zip files as Resources
 	local old_getbuildcategory = premake.xcode.getbuildcategory
@@ -87,6 +110,12 @@ function mix_setup_project ()
 	end
 	
 	if mix_is_ios() then
+		buildoptions {
+			"-std=c++11"
+		}
+	end
+	
+	if mix_is_osx() then
 		buildoptions {
 			"-std=c++11"
 		}
@@ -177,6 +206,12 @@ function mix_setup_app ()
 		}
 	end
 	
+	if mix_is_osx() then
+		links {
+			"Cocoa.framework"
+		}
+	end
+	
 	if mix_is_windows_desktop() then
 		links {
 			"gdi32",
@@ -233,6 +268,11 @@ function mix_setup_common_app()
 		defines { "MIX_IOS" }
 	end
 	
+	if mix_is_osx() then
+		files { path.join (MIX_DIR, "src/mix/*osx.mm") }
+		defines { "MIX_OSX" }
+	end
+	
 	mix_use_zlib()
 	
 end
@@ -283,6 +323,13 @@ function mix_add_unit_tests_project ()
 		files {
 			path.join (MIX_DIR, "src/mix/*ios.mm"),
 			path.join (MIX_DIR, "src/mix/ios/tests/info.plist"),
+		}
+	end
+	
+	if mix_is_osx() then
+		defines { "MIX_OSX" }	
+		files {
+			path.join (MIX_DIR, "src/mix/*osx.mm"),
 		}
 	end
 	
