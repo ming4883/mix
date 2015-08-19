@@ -3,11 +3,12 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Collections;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 
 public class Zip
 {
-	public StringDictionary m_entries = new StringDictionary();
+	
+	public Dictionary<string, string> m_entries = new Dictionary<string, string>();
 	public string m_output;
 	
 	public void Begin (string output)
@@ -63,11 +64,11 @@ public class Zip
 	{
 		using (ZipArchive za = new ZipArchive (File.OpenWrite (m_output), ZipArchiveMode.Create))
 		{
-			foreach (DictionaryEntry _ in m_entries)
+			foreach (KeyValuePair<string, string> _ in m_entries)
 			{
-				ZipArchiveEntry zae = za.CreateEntry ((string)_.Key, CompressionLevel.Fastest);
+				ZipArchiveEntry zae = za.CreateEntry (_.Key, CompressionLevel.Fastest);
 				using (Stream dst = zae.Open())
-				using (Stream src = File.OpenRead ((string)_.Value))
+				using (Stream src = File.OpenRead (_.Value))
 				{
 					src.CopyTo (dst);
 				}
@@ -86,7 +87,7 @@ public class Zip
 			Zip zip = new Zip();
 			zip.Begin (output);
 			
-			for (int i = 1; i < args.Length; ++i)
+			for (int i = args.Length - 1; i >= 1; --i)
 				zip.AddDir (args[i]);
 			
 			zip.End();
