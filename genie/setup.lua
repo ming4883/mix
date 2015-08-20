@@ -270,6 +270,10 @@ function mix_setup_common_app()
 	
 	if mix_is_osx() then
 		files { path.join (MIX_DIR, "src/mix/*osx.mm") }
+		local runtime_file = path.join ("../runtime/", project().name, "osx/runtime.zip");
+		if os.isfile (runtime_file) then
+			files {runtime_file}
+		end
 		defines { "MIX_OSX" }
 	end
 	
