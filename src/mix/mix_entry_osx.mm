@@ -11,15 +11,33 @@
 #import <Cocoa/Cocoa.h>
 
 @interface mixWindowDelegate : NSObject<NSWindowDelegate>
-
+-(id)initWithWindow:(NSWindow*) _window;
 @end
 
 @implementation mixWindowDelegate
+{
+    NSWindow* m_window;
+}
 
+-(id)initWithWindow:(NSWindow*) _window
+{
+    if (nil != [self init])
+    {
+        m_window = _window;
+        [_window setDelegate:self];
+        [self windowDidResize: nil];
+    }
+
+    return self;
+}
 
 - (void)windowDidResize:(NSNotification *)_notification
 {
     BX_UNUSED(_notification);
+
+    CGRect _rect = [[m_window contentView] frame];
+    mix::theApp()->platformSetBackbufferSize ((int)_rect.size.width, (int)_rect.size.height);
+    mix::theApp()->pushEvent (mix::FrontendEvent::resized((int)_rect.size.width, (int)_rect.size.height));
 }
 
 - (void)windowWillClose:(NSNotification *)_notification
@@ -27,37 +45,50 @@
     BX_UNUSED(_notification);
 }
 
+- (BOOL)windowShouldClose:(NSWindow*)_window
+{
+    [m_window setDelegate:nil];
+    [NSApp terminate:self];
+    return YES;
+}
+
 @end
 
 @interface mixAppDelegate : NSObject<NSApplicationDelegate>
-- (bool)hasTerminated;
-- (void)processEvents;
++ (mixAppDelegate*)sharedDelegate;
+- (BOOL)hasTerminated;
+- (NSInteger)processEvents;
 @end
 
 @implementation mixAppDelegate
 {
-    NSWindow* m_window;
-    mixWindowDelegate* m_windowDelegate;
+    NSMutableArray* m_windowDelegates;
     BOOL m_quit;
+}
+
++ (mixAppDelegate*)sharedDelegate
+{
+    static id delegate = [[mixAppDelegate alloc] init];
+    return delegate;
 }
 
 - (id)init
 {
     self = [super init];
     self->m_quit = NO;
+    self->m_windowDelegates = [[NSMutableArray alloc] init];
     return self;
 }
 
 #if !__has_feature(objc_arc)
 - (void)dealloc
 {
-    [m_window release];
-    [m_windowDelegate release];
+    [m_windowDelegates release];
     [super dealloc];
 }
 #endif
 
-- (bool)hasTerminated
+- (BOOL)hasTerminated
 {
     return self->m_quit;
 }
@@ -67,17 +98,99 @@
     return [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
 }
 
-- (void)processEvents
+- (CGPoint) getMouseLocation:(NSEvent*) _evt
+{
+    NSWindow* _win = [_evt window];
+    NSRect originalFrame = [_win frame];
+    NSPoint location = [_win mouseLocationOutsideOfEventStream];
+    NSRect adjustFrame = [_win contentRectForFrameRect: originalFrame];
+
+    int x = location.x;
+    int y = (int)adjustFrame.size.height - (int)location.y;
+
+    // clamp within the range of the window
+    //if (x < 0) x = 0;
+    //if (y < 0) y = 0;
+    if (x > (int)adjustFrame.size.width) x = (int)adjustFrame.size.width;
+    if (y > (int)adjustFrame.size.height) y = (int)adjustFrame.size.height;
+
+    return CGPointMake (x, y);
+}
+
+- (void) handleMouseMove:(NSEvent*) _evt
+{
+
+}
+
+- (void) handleMouseDown:(NSEvent*) _evt
+               withButton:(mix::FrontendMouseId::Enum) _mid
+{
+    CGPoint _pt = [self getMouseLocation:_evt];
+    if (_pt.y >= 0)
+        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (_pt.x, _pt.y, _mid));
+}
+
+- (void) handleMouseUp:(NSEvent*) _evt
+              withButton:(mix::FrontendMouseId::Enum) _mid
+{
+    CGPoint _pt = [self getMouseLocation:_evt];
+    if (_pt.y >= 0)
+        mix::theApp()->pushEvent (mix::FrontendEvent::touchUp (_pt.x, _pt.y, _mid));
+
+}
+
+- (NSInteger)processEvents
 {
     NSEvent* _evt = [self peekEvent];
+    NSInteger _cnt = 0;
 
     while (nil != _evt)
     {
+        _cnt++;
+
+        switch ([_evt type])
+        {
+            case NSMouseMoved:
+            case NSLeftMouseDragged:
+            case NSRightMouseDragged:
+            case NSOtherMouseDragged:
+                {
+                    [self handleMouseMove: _evt];
+                    break;
+                }
+
+            case NSLeftMouseDown:
+                {
+                    [self handleMouseDown: _evt withButton:mix::FrontendMouseId::Left];
+                    break;
+                }
+
+            case NSLeftMouseUp:
+                {
+                    [self handleMouseUp: _evt withButton:mix::FrontendMouseId::Left];
+                    break;
+                }
+
+            case NSRightMouseDown:
+                {
+                    [self handleMouseDown: _evt withButton:mix::FrontendMouseId::Right];
+                    break;
+                }
+
+            case NSRightMouseUp:
+                {
+                    [self handleMouseUp: _evt withButton:mix::FrontendMouseId::Right];
+                    break;
+                }
+        };
+
         [NSApp sendEvent:_evt];
         [NSApp updateWindows];
 
         _evt = [self peekEvent];
     }
+
+    return _cnt;
 }
 
 - (NSWindow*)createWindow:(const mix::FrontendDesc&) _request
@@ -119,7 +232,10 @@
     [_win setTitle:[[NSProcessInfo processInfo] processName]];
     [_win setAcceptsMouseMovedEvents:YES];
     [_win setBackgroundColor:[NSColor blackColor]];
-    [_win setDelegate:m_windowDelegate];
+
+    mixWindowDelegate* _winDele = [mixWindowDelegate alloc];
+    [_winDele initWithWindow:_win];
+    [m_windowDelegates addObject:_winDele];
 
     return _win;
 }
@@ -136,18 +252,16 @@
         return;
     }
 
-    m_windowDelegate = [mixWindowDelegate alloc];
-
-    m_window = [self createWindow:(mix::theApp()->getMainFrontendDesc())];
-    [m_window makeKeyAndOrderFront: m_window];
+    NSWindow* _window = [self createWindow:(mix::theApp()->getMainFrontendDesc())];
+    [_window makeKeyAndOrderFront: _window];
 
     bgfx::PlatformData pd;
     pd.ndt              = NULL;
 
 #if !__has_feature(objc_arc)
-    pd.nwh              = (void*)m_window;
+    pd.nwh              = (void*)_window;
 #else
-    pd.nwh              = (__bridge_retained void*)m_window;
+    pd.nwh              = (__bridge_retained void*)_window;
 #endif
     pd.context          = NULL;
     pd.backBuffer       = NULL;
@@ -165,14 +279,6 @@
     }
 
     mix::theApp()->postInit();
-
-
-    {
-        CGRect _ = [[m_window contentView] frame];
-        bgfx::reset ((uint32_t)_.size.width, (uint32_t)_.size.height, BGFX_RESET_NONE);
-        mix::theApp()->platformSetBackbufferSize((int)_.size.width, (int)_.size.height);
-    }
-
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)_sender
@@ -198,18 +304,61 @@
     return NSTerminateCancel;
 }
 
+-(void)applicationWillBecomeActive:(NSNotification *)_notification
+{
+    BX_UNUSED(_notification);
+
+    if (mix::theApp())
+    {
+        mix::theApp()->pushEvent (mix::ApplicationEvent::willEnterForeground());
+    }
+}
+
+-(void)applicationWillResignActive:(NSNotification *)_notification
+{
+    BX_UNUSED(_notification);
+
+    if (mix::theApp())
+    {
+        mix::theApp()->pushEvent (mix::ApplicationEvent::willEnterBackground());
+    }
+}
+
+-(void)applicationDidBecomeActive:(NSNotification *)_notification
+{
+    BX_UNUSED(_notification);
+
+    if (mix::theApp())
+    {
+        mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterForeground());
+    }
+}
+
+-(void)applicationDidResignActive:(NSNotification *)_notification
+{
+    BX_UNUSED(_notification);
+
+    if (mix::theApp())
+    {
+        mix::theApp()->pushEvent (mix::ApplicationEvent::didEnterBackground());
+    }
+}
+
 @end
 
 int main(int _argc, char* _argv[])
 {
     [NSApplication sharedApplication];
 
-    mixAppDelegate* _appDelegate = [mixAppDelegate alloc];
+    mixAppDelegate* _appDelegate = [mixAppDelegate sharedDelegate];
 
     [NSApp setDelegate:_appDelegate];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     [NSApp activateIgnoringOtherApps:YES];
     [NSApp finishLaunching];
+
+    // a small work around for fixing GL_INVALID_FRAMEBUFFER_OPERATION in glClear during startup
+    while ([_appDelegate processEvents] <= 0);
 
     while (![_appDelegate hasTerminated])
     {
