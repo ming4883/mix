@@ -1,4 +1,5 @@
 #include <mix/mix_application.h>
+#include <bgfx.h>
 
 namespace mix
 {
@@ -145,6 +146,11 @@ namespace mix
         while (!m_eventQueue.isEmpty())
         {
             const Event* _event = m_eventQueue.peek();
+
+            const mix::FrontendEvent* _fnevt = _event->cast<mix::FrontendEvent>();
+            if (nullptr != _fnevt && _fnevt->type == mix::FrontendEventType::Resized)
+                bgfx::reset (_fnevt->params.size.w, _fnevt->params.size.h, BGFX_RESET_HIDPI);
+
             handleEvent (_event);
             m_eventQueue.discard();
         }

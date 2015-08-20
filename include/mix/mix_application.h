@@ -57,7 +57,9 @@ public:
     //! Set the requested main FrontendDesc. Invoke this method during the constructor.
     void setMainFrontendDesc (const FrontendDesc& _desc);
 
-    //! Return the application identifier e.g. "org.mix.example01"
+    /*! Return the application identifier e.g. "org.mix.example01"
+        Used in asset loading (within IDE), logging...
+     */
     virtual const char* getAppId() const = 0;
 
     //! Invoked when application startup

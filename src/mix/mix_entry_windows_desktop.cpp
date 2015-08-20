@@ -286,7 +286,7 @@ public:
         return msg.message != WM_QUIT;
     }
 
-    void shutdown ()
+    void shutdown (void)
     {
         ReleaseDC (window, display);
         DestroyWindow (window);
@@ -294,32 +294,35 @@ public:
     }
 };
 
+void changeCWD (void)
+{
+    wchar_t path[MAX_PATH];
+    wchar_t drive[_MAX_DRIVE];
+    wchar_t dir[_MAX_DIR];
+    wchar_t fname[_MAX_FNAME];
+    wchar_t ext[_MAX_EXT];
+    GetModuleFileNameW (GetModuleHandle (0), path, MAX_PATH);
+    _wsplitpath (path, drive, dir, fname, ext);
+    _wmakepath (path, drive, dir, nullptr, nullptr);
+    if (FALSE == SetCurrentDirectoryW (path))
+    {
+        mix::Log::w ("app", "failed to change current directory to exe path");
+    }
+}
+
 int main (int argc, const char** argv)
 {
     mix::Log::init();
     mix::Asset::init();
-
-    // change the cwd to where the exe is located
-    {
-        wchar_t path[MAX_PATH];
-        wchar_t drive[_MAX_DRIVE];
-        wchar_t dir[_MAX_DIR];
-        wchar_t fname[_MAX_FNAME];
-        wchar_t ext[_MAX_EXT];
-        GetModuleFileNameW (GetModuleHandle (0), path, MAX_PATH);
-        _wsplitpath (path, drive, dir, fname, ext);
-        _wmakepath (path, drive, dir, nullptr, nullptr);
-        if (FALSE == SetCurrentDirectoryW (path))
-        {
-            mix::Log::w ("app", "failed to change current directory to exe path");
-        }
-    }
 
     if (!mix::Application::get())
     {
         mix::Log::e ("app", "mix::theApp is nullptr!");
         return -1;
     }
+
+    // change the cwd to where the exe is located
+    changeCWD();
 
     Window _window;
 
