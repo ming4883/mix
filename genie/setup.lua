@@ -203,6 +203,7 @@ function mix_setup_app ()
 			"-framework OpenGLES",
 			"-framework UIKit",
 			"-framework QuartzCore",
+			"-framework Metal",
 		}
 	end
 	
@@ -368,7 +369,9 @@ project ("bgfx_static")
 	
 	if mix_is_ios() then
 		defines {
-			"BGFX_CONFIG_MULTITHREADED=0"
+			"BGFX_CONFIG_MULTITHREADED=0",
+			"BGFX_CONFIG_RENDERER_METAL=0",
+			"BGFX_CONFIG_RENDERER_OPENGLES=1",
 		}
 	end
 	
