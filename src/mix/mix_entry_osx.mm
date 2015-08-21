@@ -182,11 +182,13 @@
                     [self handleMouseUp: _evt withButton:mix::FrontendMouseId::Right];
                     break;
                 }
+            default:
+                break;
         };
 
         [NSApp sendEvent:_evt];
         [NSApp updateWindows];
-
+        
         _evt = [self peekEvent];
     }
 
@@ -233,8 +235,7 @@
     [_win setAcceptsMouseMovedEvents:YES];
     [_win setBackgroundColor:[NSColor blackColor]];
 
-    mixWindowDelegate* _winDele = [mixWindowDelegate alloc];
-    [_winDele initWithWindow:_win];
+    mixWindowDelegate* _winDele = [[mixWindowDelegate alloc] initWithWindow:_win];
     [m_windowDelegates addObject:_winDele];
 
     return _win;
@@ -348,27 +349,30 @@
 
 int main(int _argc, char* _argv[])
 {
-    [NSApplication sharedApplication];
+    @autoreleasepool {
 
-    mixAppDelegate* _appDelegate = [mixAppDelegate sharedDelegate];
+        [NSApplication sharedApplication];
 
-    [NSApp setDelegate:_appDelegate];
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    [NSApp activateIgnoringOtherApps:YES];
-    [NSApp finishLaunching];
+        mixAppDelegate* _appDelegate = [mixAppDelegate sharedDelegate];
 
-    // a small work around for fixing GL_INVALID_FRAMEBUFFER_OPERATION in glClear during startup
-    while ([_appDelegate processEvents] <= 0);
+        [NSApp setDelegate:_appDelegate];
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+        [NSApp activateIgnoringOtherApps:YES];
+        [NSApp finishLaunching];
 
-    while (![_appDelegate hasTerminated])
-    {
-        [_appDelegate processEvents];
+        // a small work around for fixing GL_INVALID_FRAMEBUFFER_OPERATION in glClear during startup
+        while ([_appDelegate processEvents] <= 0);
 
-        if (mix::theApp())
+        while (![_appDelegate hasTerminated])
         {
-            mix::theApp()->preUpdate();
-            mix::theApp()->update();
-            mix::theApp()->postUpdate();
+            [_appDelegate processEvents];
+
+            if (mix::theApp())
+            {
+                mix::theApp()->preUpdate();
+                mix::theApp()->update();
+                mix::theApp()->postUpdate();
+            }
         }
     }
 

@@ -248,7 +248,11 @@
 
     bgfx::PlatformData pd;
     pd.ndt              = NULL;
-    pd.nwh              = m_view.layer;
+#if !__has_feature(objc_arc)
+    pd.nwh              = (void*)m_view.layer;
+#else
+    pd.nwh              = (__bridge_retained void*)m_view.layer;
+#endif
     pd.context          = NULL;
     pd.backBuffer       = NULL;
     pd.backBufferDS     = NULL;
@@ -322,6 +326,7 @@
     mix::theApp()->processQueuedEvents();
 }
 
+#if !__has_feature(objc_arc)
 - (void)dealloc
 {
     [m_window release];
@@ -329,15 +334,17 @@
     [m_viewcontroller release];
     [super dealloc];
 }
+#endif
 
 @end
 
 int main(int _argc, char* _argv[])
 {
-    NSAutoreleasePool* pool = [ [NSAutoreleasePool alloc] init];
-    int exitCode = UIApplicationMain(_argc, _argv, @"UIApplication", NSStringFromClass([mixAppDelegate class]) );
-    [pool release];
-    return exitCode;
+    @autoreleasepool
+    {
+        int exitCode = UIApplicationMain(_argc, _argv, @"UIApplication", NSStringFromClass([mixAppDelegate class]) );
+        return exitCode;
+    }
 }
 
 #endif // #if defined (MIX_IOS) && !defined (MIX_TESTS)

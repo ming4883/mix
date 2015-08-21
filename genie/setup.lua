@@ -266,7 +266,12 @@ function mix_setup_common_app()
 		if os.isfile (runtime_file) then
 			files {runtime_file}
 		end
+		
 		defines { "MIX_IOS" }
+		
+		buildoptions {
+			"-fobjc-arc"
+		}
 	end
 	
 	if mix_is_osx() then
@@ -275,7 +280,12 @@ function mix_setup_common_app()
 		if os.isfile (runtime_file) then
 			files {runtime_file}
 		end
+		
 		defines { "MIX_OSX" }
+		
+		buildoptions {
+			"-fobjc-arc"
+		}
 	end
 	
 	mix_use_zlib()
