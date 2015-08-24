@@ -155,4 +155,41 @@ namespace mix
             m_eventQueue.discard();
         }
     }
+
+    
+    bgfx::ProgramHandle Application::loadProgram (const char* _vsPath, const char* _fsPath)
+    {
+        Buffer _buf;
+        Result _ret;
+
+        bgfx::ShaderHandle _vsh, _fsh;
+
+        if ((_ret = Asset::load (_buf, _vsPath)).isFail())
+        {
+            Log::e ("app", "failed to load vertex shader: %s", _ret.why());
+            return BGFX_INVALID_HANDLE;
+        }
+
+        _vsh = bgfx::createShader (bgfx::copy (_buf.ptr(), _buf.size()));
+        if (!bgfx::isValid (_vsh))
+        {
+            Log::e ("app", "failed to create vertex shader");
+        }
+
+        if ((_ret = Asset::load (_buf, _fsPath)).isFail())
+        {
+            Log::e (getAppId(), "failed to load fragment shader: %s", _ret.why());
+            return BGFX_INVALID_HANDLE;
+        }
+
+        _fsh = bgfx::createShader (bgfx::copy (_buf.ptr(), _buf.size()));
+        if (!bgfx::isValid (_fsh))
+        {
+            Log::e ("app", "failed to create fragment shader");
+        }
+
+        return bgfx::createProgram (_vsh, _fsh, true);
+    }
+        
+
 }
