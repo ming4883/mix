@@ -10,8 +10,6 @@
 #include <mix/mix_time.h>
 #include <mix/mix_log.h>
 
-#include <bgfx.h>
-
 namespace mix
 {
 

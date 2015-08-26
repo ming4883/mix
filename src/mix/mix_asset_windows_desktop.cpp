@@ -78,6 +78,10 @@ namespace mix
         _ret = AssetImpl::sharedInst.load (_outBuffer, _filepath.format ("../../../runtime/%s/windows/%s", theApp()->getAppId(), _assetname));
         if (_ret.isOK())
             return _ret;
+
+        _ret = AssetImpl::sharedInst.load (_outBuffer, _filepath.format ("../../../runtime/%s/common/%s", theApp()->getAppId(), _assetname));
+        if (_ret.isOK())
+            return _ret;
         
         return Result::fail ("asset not found");
     }
