@@ -90,9 +90,6 @@ public:
     //! Push an Event to the Application for processing
     Result pushEvent (Event* _event);
 
-    //! load a cpu program from assets.
-    bgfx::ProgramHandle loadProgram (const char* _vsPath, const char* _fsPath);
-
 public:
     //! Perform common tasks before Application::init()
     void preInit();
