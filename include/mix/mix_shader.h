@@ -2,7 +2,7 @@
 #define MIX_SHADER_H
 
 #include <mix/mix_asset.h>
-#include <bgfx.h>
+#include <bgfx/bgfx.h>
 
 namespace mix
 {

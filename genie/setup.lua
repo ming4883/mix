@@ -209,7 +209,9 @@ function mix_setup_app ()
 	
 	if mix_is_osx() then
 		links {
-			"Cocoa.framework"
+			"Cocoa.framework",
+			"Metal.framework",
+			"QuartzCore.framework",
 		}
 	end
 	

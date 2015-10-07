@@ -1,5 +1,5 @@
 #include <mix/mix_application.h>
-#include <bgfx.h>
+#include <bgfx/bgfx.h>
 
 namespace mix
 {
