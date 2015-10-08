@@ -253,8 +253,7 @@ function mix_setup_common_app()
 		
 		local asset_dir = path.join ("../runtime/", project().name, "android")
 		if os.isdir (asset_dir) then
-			local grd = gradle()
-			grd.assets_srcdirs = {asset_dir}
+			gradle:project().assets_srcdirs = {asset_dir}
 		end
 	end
 	
@@ -321,11 +320,11 @@ function mix_add_unit_tests_project ()
 			"android",
 		}
 		
-		local grd = gradle()
+		local grd_prj = gradle:project()
 		
-		grd.manifest = path.join (MIX_DIR, "src/mix/android/tests/AndroidManifest.xml")
+		grd_prj.manifest = path.join (MIX_DIR, "src/mix/android/tests/AndroidManifest.xml")
 		
-		grd.java_srcdirs = {
+		grd_prj.java_srcdirs = {
 			path.join (MIX_DIR, "src/mix/android/app/java"),
 			path.join (MIX_DIR, "src/mix/android/tests/java"),
 		}

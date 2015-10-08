@@ -1,6 +1,8 @@
 premake.gradle = {}
+gradle = premake.gradle
 
 dofile "gradle_main.lua"
+dofile "gradle_generator.lua"
 dofile "gradle_ndk_common.lua"
 dofile "gradle_ndk_project.lua"
 dofile "gradle_ndk_solution.lua"

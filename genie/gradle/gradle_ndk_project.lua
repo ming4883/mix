@@ -89,7 +89,9 @@ PROJECT_SHARED_LIBRARIES :=
 			end
 		end
 		
-		for _, abi in ipairs (premake.gradle.appabi) do
+		local abis = premake.gradle:get_appabis()
+		
+		for _, abi in ipairs (abis) do
 			local extras = premake.gradle.ndk.appabiextra.get (prj.name, abi, cfgname)
 			if extras ~= nil and #extras > 0 then
 				_p ("")

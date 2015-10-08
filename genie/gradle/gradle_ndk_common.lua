@@ -61,8 +61,7 @@ end
 premake.gradle.generate_application_dot_mk = function (obj)
 	_p ("APP_PLATFORM := %s", premake.gradle.ndk.appplatform)
 	_p ("APP_STL := %s", premake.gradle.ndk.appstl)
-	
-	_p ("APP_ABI := %s", table.concat (premake.gradle.appabi, " "))
+	_p ("APP_ABI := %s", table.concat (premake.gradle:get_appabis(), " "))
 	
 	if premake.gradle.ndk.ld_gold.enable then
 		_p ("APP_LDFLAGS := -fuse-ld=gold")
