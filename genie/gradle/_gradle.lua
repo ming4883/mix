@@ -3,13 +3,7 @@ gradle = premake.gradle
 
 dofile "gradle_main.lua"
 dofile "gradle_generator.lua"
-dofile "gradle_ndk_common.lua"
-dofile "gradle_ndk_project.lua"
-dofile "gradle_ndk_solution.lua"
-
-premake.gradle.is_app_project = function (prj)
-	return string.match (prj.kind, "App")
-end
+dofile "gradle_ndk_generator.lua"
 
 premake.gradle.onexecute = function ()
 	-- print ("gradle_execute()")

@@ -93,20 +93,25 @@ function mix_setup_project ()
 	uuid (os.uuid (prj.name))
 	
 	if mix_is_android() then
-		buildoptions {
-			"-std=c++11"
-		}
+		local grd_prj = gradle:project(prj.name)
 		
-		premake.gradle.ndk.appabiextra.add ("armeabi", "Release", {
+		grd_prj:appabi ("armeabi"):ndk_extras ("*", {
 			"LOCAL_ARM_MODE := arm",
 		})
-		premake.gradle.ndk.appabiextra.add ("armeabi-v7a", "Release", {
+		grd_prj:appabi ("armeabi-v7a"):ndk_extras ("*", {
 			"LOCAL_ARM_MODE := arm",
+		})
+		grd_prj:appabi ("armeabi-v7a"):ndk_extras ("Release", {
 			"LOCAL_ARM_NEON := true",
 		})
-		premake.gradle.ndk.appabiextra.add ("armeabi*", "Debug", {
-			"LOCAL_ARM_MODE := arm",
-		})
+		
+		grd_prj:appabi ("x86")
+		
+		grd_prj:ndk_app_ldflags {}
+		grd_prj:ndk_app_cflags {}
+		grd_prj:ndk_app_cppflags {
+			"-std=c++11",
+		}
 	end
 	
 	if mix_is_ios() then
@@ -253,7 +258,7 @@ function mix_setup_common_app()
 		
 		local asset_dir = path.join ("../runtime/", project().name, "android")
 		if os.isdir (asset_dir) then
-			gradle:project().assets_srcdirs = {asset_dir}
+			gradle:project():assets_srcdirs {asset_dir}
 		end
 	end
 	
@@ -294,7 +299,7 @@ function mix_setup_common_app()
 end
 
 function mix_add_unit_tests_project ()
-	project ("mix_common_tests")
+	project ("mix_unit_tests")
 	kind ("WindowedApp")
 	mix_setup_project()
 	
@@ -324,7 +329,7 @@ function mix_add_unit_tests_project ()
 		
 		grd_prj.manifest = path.join (MIX_DIR, "src/mix/android/tests/AndroidManifest.xml")
 		
-		grd_prj.java_srcdirs = {
+		grd_prj:java_srcdirs {
 			path.join (MIX_DIR, "src/mix/android/app/java"),
 			path.join (MIX_DIR, "src/mix/android/tests/java"),
 		}

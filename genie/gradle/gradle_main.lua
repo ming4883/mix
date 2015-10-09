@@ -1,9 +1,29 @@
+premake.gradle.is_app_project = function (prj)
+	return string.match (prj.kind, "App")
+end
 
 premake.gradle.table_merge = function (dst, src)
-	--print (src)
-	--print (dst)
-	for i, v in pairs(src) do
-		table.insert (dst, v)
+	if nil ~= src then
+		for i, v in pairs(src) do
+			table.insert (dst, v)
+		end
+	end
+	return dst
+end
+
+premake.gradle.is_wildcard = function (pattern)
+	return pattern ~= path.wildcards (pattern)
+end
+
+premake.gradle.match_wildcard = function (s, wildcards)
+	local p = path.wildcards (wildcards)
+	
+	if p == wildcards then
+		-- not using wildcards
+		return (s == p)
+	else
+		-- using wildcards
+		return (string.find (s, p) ~= nil)
 	end
 end
 
@@ -15,14 +35,12 @@ premake.gradle.buildscript = {}
 premake.gradle.buildscript._repositories = {}
 premake.gradle.buildscript._dependencies = {}
 
-function premake.gradle.buildscript:repositories (repos)
-	premake.gradle.table_merge  (self._repositories, repos)
-	return self._repositories
+function premake.gradle.buildscript:repositories (values)
+	return premake.gradle.table_merge  (self._repositories, values)
 end
 
-function premake.gradle.buildscript:dependencies (deps)
-	premake.gradle.table_merge  (self._dependencies, deps)
-	return self._dependencies
+function premake.gradle.buildscript:dependencies (values)
+	return premake.gradle.table_merge  (self._dependencies, values)
 end
 
 --
@@ -41,9 +59,8 @@ function premake.gradle:get_appabis()
 	return abis
 end
 
-function premake.gradle:appabi (appabi)
-	premake.gradle.table_merge  (self._appabi, appabi)
-	return self._appabi
+function premake.gradle:appabi (values)
+	return premake.gradle.table_merge  (self._appabi, values)
 end
 
 --
@@ -60,36 +77,122 @@ function premake.gradle:project (prjname)
 	local grd_prj = self.projects[prjname]
 	if nil == grd_prj then
 		print ("adding new gradle project " .. prjname)
-		--grd_prj = self.newproject()
+		
 		grd_prj = {}
-		grd_prj.plugins = {}
-		grd_prj.repositories = {}
-		grd_prj.dependencies = {}
+		
+		-- ndk
+		grd_prj.ndk_app_stl = "gnustl_shared"
+		grd_prj.ndk_app_platform = "android-12"
+		
+		grd_prj._ndk_app_cflags = {}
+		function grd_prj:ndk_app_cflags (values)
+			return premake.gradle.table_merge  (self._ndk_app_cflags, values)
+		end
+		
+		grd_prj._ndk_app_cppflags = {}
+		function grd_prj:ndk_app_cppflags (values)
+			return premake.gradle.table_merge  (self._ndk_app_cppflags, values)
+		end
+		
+		grd_prj._ndk_app_ldflags = {}
+		function grd_prj:ndk_app_ldflags (values)
+			return premake.gradle.table_merge  (self._ndk_app_ldflags, values)
+		end
+		-- appabis
+		grd_prj._appabis = {}
 
-		grd_prj.buildTypes = {}
-		grd_prj.buildTypes.add = function (name)
-			local btype = {
-				debuggable = false,
-				jniDebuggable = false,
-				renderscriptDebuggable = false,
-				renderscriptOptimLevel = 3,
-				applicationIdSuffix = nil,
-				versionNameSuffix = nil,
-				zipAlignEnabled = false,
-				minifyEnabled = false, 
-				shrinkResources = false, 
-				proguardFiles = {},
-			}
-			grd_prj.buildTypes[name] = btype
+		function grd_prj:appabi (name)
+			local abi = self._appabis[name]
+			if nil == abi then
+				print ("adding new abi " .. name)
+				abi = {}
+				
+				-- ndk_extras
+				abi._ndk_extras = {}
+				function abi:ndk_extras (cfg, values)
+					if premake.gradle.is_wildcard (cfg) then
+						
+						for k, v in pairs(self._ndk_extras) do
+							if premake.gradle.match_wildcard (k, cfg) then
+								premake.gradle.table_merge  (v, values)
+							end
+						end
+						
+					else
+						local cfg_key = string.lower (cfg)
+						--local cfg_key = cfg
+						local extras = self._ndk_extras[cfg_key]
+						if extras == nil then
+							extras = {}
+							self._ndk_extras[cfg_key] = extras
+						end
+						return premake.gradle.table_merge  (extras, values)
+					end
+					
+				end
+				abi:ndk_extras("Debug")
+				abi:ndk_extras("Release")
+				
+				self._appabis[name] = abi
+			end
+			return abi
+		end
+		
+		function grd_prj:appabi_names()
+			local ret = {}
+			for k,v in pairs(self._appabis) do
+				table.insert(ret, k)
+			end
+			return ret
+		end
+		
+		grd_prj:appabi ("armeabi")
+
+		-- plugins
+		grd_prj._plugins = {}
+		
+		function grd_prj:plugins (values)
+			return premake.gradle.table_merge  (self._plugins, values)
+		end
+		-- repositories
+		grd_prj._repositories = {}
+		function grd_prj:repositories (values)
+			return premake.gradle.table_merge  (self._repositories, values)
+		end
+		-- dependencies
+		grd_prj._dependencies = {}
+		function grd_prj:dependencies (values)
+			return premake.gradle.table_merge  (self._dependencies, values)
+		end
+		-- buildTypes
+		grd_prj._buildTypes = {}
+		function grd_prj:buildType (name)
+			local btype = self._buildTypes[name]
+			if nil == btype then
+				btype = {
+					debuggable = false,
+					jniDebuggable = false,
+					renderscriptDebuggable = false,
+					renderscriptOptimLevel = 3,
+					applicationIdSuffix = nil,
+					versionNameSuffix = nil,
+					zipAlignEnabled = false,
+					minifyEnabled = false, 
+					shrinkResources = false, 
+					proguardFiles = {},
+				}
+				self._buildTypes[name] = btype
+			end
+			return btype
 		end
 
-		grd_prj.buildTypes.add ("debug")
-		grd_prj.buildTypes.debug.debuggable = true
-		grd_prj.buildTypes.debug.jniDebuggable = true
-		grd_prj.buildTypes.debug.renderscriptDebuggable = true
+		local b_debug = grd_prj:buildType ("Debug")
+		b_debug.debuggable = true
+		b_debug.jniDebuggable = true
+		b_debug.renderscriptDebuggable = true
 
-		grd_prj.buildTypes.add ("release")
-		grd_prj.buildTypes.release.zipAlignEnabled = true
+		local b_release = grd_prj:buildType ("Release")
+		b_release.zipAlignEnabled = true
 
 		grd_prj.compileSdkVersion = 21
 		grd_prj.buildToolsVersion = "21.1.2"
@@ -98,12 +201,34 @@ function premake.gradle:project (prjname)
 		grd_prj.minSdkVersion = 19 -- http://developer.android.com/google/play/publishing/multiple-apks.html
 		grd_prj.targetSdkVersion = 19 -- http://developer.android.com/google/play/publishing/multiple-apks.html
 		grd_prj.manifest = "AndroidManifest.xml"
-		grd_prj.java_srcdirs = {}
-		grd_prj.aidl_srcdirs = {}
-		grd_prj.renderscript_srcdirs = {}
-		grd_prj.res_srcdirs = {}
-		grd_prj.assets_srcdirs = {}
+		
+		grd_prj._java_srcdirs = {}
+		function grd_prj:java_srcdirs (values)
+			return premake.gradle.table_merge  (self._java_srcdirs, values)
+		end
+		
+		grd_prj._aidl_srcdirs = {}
+		function grd_prj:aidl_srcdirs (values)
+			return premake.gradle.table_merge  (self._aidl_srcdirs, values)
+		end
+		
+		grd_prj._renderscript_srcdirs = {}
+		function grd_prj:renderscript_srcdirs (values)
+			return premake.gradle.table_merge  (self._renderscript_srcdirs, values)
+		end
+		
+		grd_prj._res_srcdirs = {}
+		function grd_prj:res_srcdirs (values)
+			return premake.gradle.table_merge  (self._res_srcdirs, values)
+		end
+		
+		grd_prj._assets_srcdirs = {}
+		function grd_prj:assets_srcdirs (values)
+			return premake.gradle.table_merge  (self._assets_srcdirs, values)
+		end
+		
 		grd_prj.externalprojects = {}
+		
 		grd_prj.multiDexEnabled = false -- https://developer.android.com/tools/building/multidex.html
 
 		-- http://tools.android.com/tech-docs/new-build-system/user-guide/apk-splits

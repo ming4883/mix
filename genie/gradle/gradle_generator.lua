@@ -186,27 +186,23 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 	
 	_p ("")
 	_p ("apply plugin: 'com.android.application'")
-	if #grd_prj.plugins > 0 then
-		_p (table.implode (grd_prj.plugins, "apply plugin: '", "'", "\n"))
+	if #grd_prj._plugins > 0 then
+		_p (table.implode (grd_prj._plugins, "apply plugin: '", "'", "\n"))
 	end
 	
 	_p ("")
 	_p ("repositories {")
 	_p ("    jcenter()")
-	if #grd_prj.repositories > 0 then
-		_p (table.implode (grd_prj.repositories, "  ", "", "\n"))
+	if #grd_prj._repositories > 0 then
+		_p (table.implode (grd_prj._repositories, "  ", "", "\n"))
 	end
 	_p ("}")
 	
-	--if #grd_prj.dependencies > 0 
-	--or #grd_prj.externalprojects > 0
-	--or grd_prj.multiDexEnabled
-	--then
 	_p ("")
 	_p ("dependencies {")
 	
-	if #grd_prj.dependencies > 0 then
-		_p (table.implode (grd_prj.dependencies, "    ", "", "\n"))
+	if #grd_prj._dependencies > 0 then
+		_p (table.implode (grd_prj._dependencies, "    ", "", "\n"))
 	end
 
 	for k, v in pairs (grd_prj.externalprojects) do
@@ -232,10 +228,8 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 	_p ("        multiDexEnabled %s", grd_prj.multiDexEnabled)
 	_p ("    }") -- defaultConfig
 	
-	for k, v in pairs(grd_prj.buildTypes) do
-		if type (v) ~= "function" then
-			process_buildtype (k, v)
-		end
+	for k, v in pairs(grd_prj._buildTypes) do
+		process_buildtype (k, v)
 	end
 	
 	_p ("    sourceSets {")
@@ -244,25 +238,25 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 	_p ("            jni.srcDirs = []")
 	_p ("            manifest.srcFile '%s'", processpath (refpath, grd_prj.manifest))
 	
-	if #grd_prj.java_srcdirs > 0 then
-		_p ("            java.srcDirs = [%s]", fmt_srcdirs (grd_prj.java_srcdirs))
+	if #grd_prj._java_srcdirs > 0 then
+		_p ("            java.srcDirs = [%s]", fmt_srcdirs (grd_prj._java_srcdirs))
 	end
 	--_p ("      resources.srcDirs = [%s]", "")
 	
-	if #grd_prj.aidl_srcdirs > 0 then
-		_p ("            aidl.srcDirs = [%s]", fmt_srcdirs (grd_prj.aidl_srcdirs))
+	if #grd_prj._aidl_srcdirs > 0 then
+		_p ("            aidl.srcDirs = [%s]", fmt_srcdirs (grd_prj._aidl_srcdirs))
 	end
 	
-	if #grd_prj.renderscript_srcdirs > 0 then
-		_p ("            renderscript.srcDirs = [%s]", fmt_srcdirs (grd_prj.renderscript_srcdirs))
+	if #grd_prj._renderscript_srcdirs > 0 then
+		_p ("            renderscript.srcDirs = [%s]", fmt_srcdirs (grd_prj._renderscript_srcdirs))
 	end
 	
-	if #grd_prj.res_srcdirs > 0 then
-		_p ("            res.srcDirs = [%s]", fmt_srcdirs (grd_prj.res_srcdirs))
+	if #grd_prj._res_srcdirs > 0 then
+		_p ("            res.srcDirs = [%s]", fmt_srcdirs (grd_prj._res_srcdirs))
 	end
 	
-	if #grd_prj.assets_srcdirs > 0 then
-		_p ("            assets.srcDirs = [%s]", fmt_srcdirs (grd_prj.assets_srcdirs))
+	if #grd_prj._assets_srcdirs > 0 then
+		_p ("            assets.srcDirs = [%s]", fmt_srcdirs (grd_prj._assets_srcdirs))
 	end
 	
 	_p ("        }") -- main
@@ -275,7 +269,7 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 		_p ("        enable true")
 		_p ("        reset()")
 		_p ("        universalApk false")
-		_p ("        include " .. table.implode (premake.gradle:get_appabis(), "'", "'", ","))
+		_p ("        include " .. table.implode (grd_prj:appabi_names(), "'", "'", ","))
 		_p ("    }")
 		_p ("}")
 		
@@ -284,7 +278,7 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 		_p ("android.applicationVariants.all { variant ->")
 		_p ("    variant.outputs.each { output ->")
 		local codes = "        def codes = ["
-		for k, v in ipairs (premake.gradle:get_appabis()) do
+		for k, v in ipairs (grd_prj:appabi_names()) do
 			codes = codes .. string.format ("'%s':%d, ", v, k)
 		end
 		codes = codes .. "]"

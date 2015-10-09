@@ -1,4 +1,35 @@
 
+premake.gradle.generate_application_dot_mk = function (prj)
+
+	local grd_prj = gradle:project (prj.name)
+	
+	_p ("APP_PLATFORM := %s", grd_prj.ndk_app_platform)
+	_p ("APP_STL := %s", grd_prj.ndk_app_stl)
+	_p ("APP_ABI := %s", table.concat (grd_prj:appabi_names(), " "))
+	
+	if #grd_prj._ndk_app_cflags > 0 then
+		_p ("APP_CFLAGS := %s", table.concat (grd_prj._ndk_app_cflags, " "))
+	end
+	
+	if #grd_prj._ndk_app_cppflags > 0 then
+		_p ("APP_CPPFLAGS := %s", table.concat (grd_prj._ndk_app_cppflags, " "))
+	end
+	
+	if #grd_prj._ndk_app_ldflags > 0 then
+		_p ("APP_LDFLAGS := %s", table.concat (grd_prj._ndk_app_ldflags, " "))
+	end
+end
+
+premake.gradle.generate_solution_android_dot_mk = function (sln)
+	
+	local content = [[
+include $(call all-subdir-makefiles)
+$(info Compiling for $(TARGET_ARCH_ABI) - $(APP_OPTIM))
+]]
+	_p (content)
+
+end
+
 premake.gradle.generate_project_android_mk = function (prj)
 	_p ("LOCAL_PATH := $(call my-dir)")
 	_p ("include $(CLEAR_VARS)")
@@ -89,13 +120,22 @@ PROJECT_SHARED_LIBRARIES :=
 			end
 		end
 		
-		local abis = premake.gradle:get_appabis()
+		--local abis = premake.gradle:get_appabis()
+		--for _, abi in ipairs (abis) do
+		--	local extras = premake.gradle.ndk.appabiextra.get (prj.name, abi, cfgname)
+		--	if extras ~= nil and #extras > 0 then
+		--		_p ("")
+		--		_p ("  ifeq ($(TARGET_ARCH_ABI), %s)", abi)
+		--		_p ("    %s", table.concat (extras, "\n    "))
+		--		_p ("  endif")
+		--	end
+		--end
 		
-		for _, abi in ipairs (abis) do
-			local extras = premake.gradle.ndk.appabiextra.get (prj.name, abi, cfgname)
+		for abiname, abi in pairs (gradle:project (prj.name)._appabis) do
+			local extras = abi:ndk_extras (cfgname)
 			if extras ~= nil and #extras > 0 then
 				_p ("")
-				_p ("  ifeq ($(TARGET_ARCH_ABI), %s)", abi)
+				_p ("  ifeq ($(TARGET_ARCH_ABI), %s)", abiname)
 				_p ("    %s", table.concat (extras, "\n    "))
 				_p ("  endif")
 			end
