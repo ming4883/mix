@@ -290,7 +290,7 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 	
 	_p ("apply from : new File (rootDir, 'support.gradle')")
 	
-	if grd_prj.extra and grd_prj.extra ~= '' then
-		_p (grd_prj.extra)
+	if #grd_prj._extras ~= '' then
+		_p (table.implode (grd_prj._extras, "", "", "\n"))
 	end
 end

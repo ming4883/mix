@@ -44,26 +44,6 @@ function premake.gradle.buildscript:dependencies (values)
 end
 
 --
--- appabi
---
-premake.gradle._appabi = {}
-
-function premake.gradle:get_appabis()
-	local abis = {}
-	
-	premake.gradle.table_merge (abis, self._appabi)
-	
-	if #abis == 0 then
-		premake.gradle.table_merge(abis, {"armeabi", "armeabi-v7a", "x86", "mips"})
-	end
-	return abis
-end
-
-function premake.gradle:appabi (values)
-	return premake.gradle.table_merge  (self._appabi, values)
-end
-
---
 -- project
 --
 premake.gradle.projects = {}
@@ -237,7 +217,10 @@ function premake.gradle:project (prjname)
 		grd_prj.splits.abi.enabled = true
 		grd_prj.splits.versionCodeBase = 10000000 -- for abi splits
 
-		grd_prj.extra = ""
+		grd_prj._extras = {}
+		function grd_prj:extras (values)
+			return premake.gradle.table_merge  (self._extras, values)
+		end
 		
 		self.projects[prjname] = grd_prj
 	end
