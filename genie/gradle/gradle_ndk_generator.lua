@@ -31,6 +31,9 @@ $(info Compiling for $(TARGET_ARCH_ABI) - $(APP_OPTIM))
 end
 
 premake.gradle.generate_project_android_mk = function (prj)
+
+	local grd_prj = gradle:project (prj.name)
+	
 	_p ("LOCAL_PATH := $(call my-dir)")
 	_p ("include $(CLEAR_VARS)")
 	_p ("")
@@ -120,18 +123,7 @@ PROJECT_SHARED_LIBRARIES :=
 			end
 		end
 		
-		--local abis = premake.gradle:get_appabis()
-		--for _, abi in ipairs (abis) do
-		--	local extras = premake.gradle.ndk.appabiextra.get (prj.name, abi, cfgname)
-		--	if extras ~= nil and #extras > 0 then
-		--		_p ("")
-		--		_p ("  ifeq ($(TARGET_ARCH_ABI), %s)", abi)
-		--		_p ("    %s", table.concat (extras, "\n    "))
-		--		_p ("  endif")
-		--	end
-		--end
-		
-		for abiname, abi in pairs (gradle:project (prj.name)._appabis) do
+		for abiname, abi in pairs (grd_prj._appabis) do
 			local extras = abi:ndk_extras (cfgname)
 			if extras ~= nil and #extras > 0 then
 				_p ("")
@@ -179,6 +171,9 @@ PROJECT_SHARED_LIBRARIES :=
 		_p ("include $(BUILD_SHARED_LIBRARY)")
 	end
 	
+	if #grd_prj._ndk_extras > 0 then
+		_p ("%s", table.concat (grd_prj._ndk_extras, "\n"))
+	end
 	
 	local deps = premake.getlinks (premake.getconfig (prj), "dependencies", "object")
 	

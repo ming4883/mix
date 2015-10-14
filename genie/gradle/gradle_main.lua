@@ -78,6 +78,12 @@ function premake.gradle:project (prjname)
 		function grd_prj:ndk_app_ldflags (values)
 			return premake.gradle.table_merge  (self._ndk_app_ldflags, values)
 		end
+		
+		grd_prj._ndk_extras = {}
+		function grd_prj:ndk_extras (values)
+			return premake.gradle.table_merge  (self._ndk_extras, values)
+		end
+		
 		-- appabis
 		grd_prj._appabis = {}
 
