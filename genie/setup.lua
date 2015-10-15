@@ -6,7 +6,7 @@ if nil == MIX_DIR then
 	error ("global variable 'MIX_DIR' is not defined prior setup.lua")
 end
 
-dofile ("gradle/_gradle.lua")
+dofile ("../vendor/mix_genie/mix_genie.lua")
 
 BGFX_DIR = path.getabsolute ("../vendor/bgfx/")
 BX_DIR =  path.getabsolute ("../vendor/bx/")

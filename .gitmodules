@@ -10,3 +10,6 @@
 [submodule "vendor/zlib"]
 	path = vendor/zlib
 	url = https://github.com/madler/zlib.git
+[submodule "vendor/mix_genie"]
+	path = vendor/mix_genie
+	url = https://github.com/ming4883/mix_genie.git
