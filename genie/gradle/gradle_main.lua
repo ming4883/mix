@@ -27,6 +27,11 @@ premake.gradle.match_wildcard = function (s, wildcards)
 	end
 end
 
+-- 
+-- android_tools (e.g. "com.android.tools.build:gradle:1.3.0")
+--
+premake.gradle.android_tools = "com.android.tools.build:gradle:1.3.0"
+
 --
 -- buildscript
 --

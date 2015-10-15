@@ -117,7 +117,7 @@ premake.gradle.generate_solution_root_build_dot_gradle = function (sln)
 	end
 	_p ("    }")
 	_p ("    dependencies {")
-	_p ("        classpath 'com.android.tools.build:gradle:1.3.0'")
+	_p ("        classpath '%s'", premake.gradle.android_tools)
 	if #premake.gradle.buildscript._dependencies > 0 then
 		_p (table.implode (premake.gradle.buildscript._dependencies, "        ", "", "\n"))
 	end
