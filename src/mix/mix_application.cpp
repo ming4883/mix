@@ -1,3 +1,5 @@
+#if !defined (MIX_TESTS)
+
 #include <mix/mix_application.h>
 #include <bgfx/bgfx.h>
 
@@ -155,5 +157,6 @@ namespace mix
             m_eventQueue.discard();
         }
     }
-
 }
+
+#endif

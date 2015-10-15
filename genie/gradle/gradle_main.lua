@@ -84,56 +84,11 @@ function premake.gradle:project (prjname)
 			return premake.gradle.table_merge  (self._ndk_extras, values)
 		end
 		
-		-- appabis
 		grd_prj._appabis = {}
-
-		function grd_prj:appabi (name)
-			local abi = self._appabis[name]
-			if nil == abi then
-				print ("adding new abi " .. name)
-				abi = {}
-				
-				-- ndk_extras
-				abi._ndk_extras = {}
-				function abi:ndk_extras (cfg, values)
-					if premake.gradle.is_wildcard (cfg) then
-						
-						for k, v in pairs(self._ndk_extras) do
-							if premake.gradle.match_wildcard (k, cfg) then
-								premake.gradle.table_merge  (v, values)
-							end
-						end
-						
-					else
-						local cfg_key = string.lower (cfg)
-						--local cfg_key = cfg
-						local extras = self._ndk_extras[cfg_key]
-						if extras == nil then
-							extras = {}
-							self._ndk_extras[cfg_key] = extras
-						end
-						return premake.gradle.table_merge  (extras, values)
-					end
-					
-				end
-				abi:ndk_extras("Debug")
-				abi:ndk_extras("Release")
-				
-				self._appabis[name] = abi
-			end
-			return abi
+		function grd_prj:appabis (values)
+			return premake.gradle.table_merge  (self._appabis, values)
 		end
 		
-		function grd_prj:appabi_names()
-			local ret = {}
-			for k,v in pairs(self._appabis) do
-				table.insert(ret, k)
-			end
-			return ret
-		end
-		
-		grd_prj:appabi ("armeabi")
-
 		-- plugins
 		grd_prj._plugins = {}
 		
@@ -153,9 +108,11 @@ function premake.gradle:project (prjname)
 		-- buildTypes
 		grd_prj._buildTypes = {}
 		function grd_prj:buildType (name)
-			local btype = self._buildTypes[name]
+			local btype_key = string.lower (name)
+			local btype = self._buildTypes[btype_key]
 			if nil == btype then
 				btype = {
+					name = name,
 					debuggable = false,
 					jniDebuggable = false,
 					renderscriptDebuggable = false,
@@ -167,17 +124,41 @@ function premake.gradle:project (prjname)
 					shrinkResources = false, 
 					proguardFiles = {},
 				}
-				self._buildTypes[name] = btype
+				-- ndk_extras
+				btype._ndk_extras = {}
+				
+				function btype:ndk_extras (abi, values)
+					local abi_key = string.lower (abi)
+					local extras = self._ndk_extras[abi_key]
+					if extras == nil then
+						extras = {}
+						self._ndk_extras[abi_key] = extras
+					end
+					return premake.gradle.table_merge (extras, values)
+				end
+				
+				function btype:get_ndk_extras (abi)
+					--print ("btype " .. self.name .. " get_ndk_extras(" .. abi .. ")")
+					local extras = {}
+					for k, v in pairs (self._ndk_extras) do
+						if premake.gradle.match_wildcard (abi, k) then
+							premake.gradle.table_merge (extras, v)
+						end
+					end
+					return extras
+				end
+				
+				self._buildTypes[btype_key] = btype
 			end
 			return btype
 		end
 
-		local b_debug = grd_prj:buildType ("Debug")
+		local b_debug = grd_prj:buildType ("debug")
 		b_debug.debuggable = true
 		b_debug.jniDebuggable = true
 		b_debug.renderscriptDebuggable = true
 
-		local b_release = grd_prj:buildType ("Release")
+		local b_release = grd_prj:buildType ("release")
 		b_release.zipAlignEnabled = true
 
 		grd_prj.compileSdkVersion = 21

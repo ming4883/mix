@@ -1,3 +1,5 @@
+#if !defined (MIX_TESTS)
+
 #include <mix/mix_shader.h>
 #include <mix/mix_log.h>
 #include <mix/mix_string.h>
@@ -46,3 +48,5 @@ namespace mix
 
     }
 }
+
+#endif

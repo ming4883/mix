@@ -5,7 +5,10 @@ premake.gradle.generate_application_dot_mk = function (prj)
 	
 	_p ("APP_PLATFORM := %s", grd_prj.ndk_app_platform)
 	_p ("APP_STL := %s", grd_prj.ndk_app_stl)
-	_p ("APP_ABI := %s", table.concat (grd_prj:appabi_names(), " "))
+	
+	if #grd_prj._appabis > 0 then
+		_p ("APP_ABI := %s", table.concat (grd_prj._appabis, " "))
+	end
 	
 	if #grd_prj._ndk_app_cflags > 0 then
 		_p ("APP_CFLAGS := %s", table.concat (grd_prj._ndk_app_cflags, " "))
@@ -123,9 +126,9 @@ PROJECT_SHARED_LIBRARIES :=
 			end
 		end
 		
-		for abiname, abi in pairs (grd_prj._appabis) do
-			local extras = abi:ndk_extras (cfgname)
-			if extras ~= nil and #extras > 0 then
+		for i, abiname in ipairs (grd_prj._appabis) do
+			local extras = grd_prj:buildType(cfgname):get_ndk_extras (abiname)
+			if #extras > 0 then
 				_p ("")
 				_p ("  ifeq ($(TARGET_ARCH_ABI), %s)", abiname)
 				_p ("    %s", table.concat (extras, "\n    "))

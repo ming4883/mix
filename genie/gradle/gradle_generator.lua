@@ -117,7 +117,7 @@ premake.gradle.generate_solution_root_build_dot_gradle = function (sln)
 	end
 	_p ("    }")
 	_p ("    dependencies {")
-	_p ("        classpath 'com.android.tools.build:gradle:1.2.+'")
+	_p ("        classpath 'com.android.tools.build:gradle:1.3.0'")
 	if #premake.gradle.buildscript._dependencies > 0 then
 		_p (table.implode (premake.gradle.buildscript._dependencies, "        ", "", "\n"))
 	end
@@ -145,42 +145,42 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 		return ret
 	end
 	
-	local process_buildtype = function (name, btype)
+	local process_buildtype = function (btype)
 	
-		_p ("    android.buildTypes.%s {", name)
-		_p ("        debuggable = %s", btype.debuggable)
-		_p ("        jniDebuggable = %s", btype.jniDebuggable)
-		_p ("        renderscriptDebuggable = %s", btype.renderscriptDebuggable)
-		_p ("        renderscriptOptimLevel = %s", btype.renderscriptOptimLevel)
+		_p ("        %s {", btype.name)
+		_p ("            debuggable = %s", btype.debuggable)
+		_p ("            jniDebuggable = %s", btype.jniDebuggable)
+		_p ("            renderscriptDebuggable = %s", btype.renderscriptDebuggable)
+		_p ("            renderscriptOptimLevel = %s", btype.renderscriptOptimLevel)
 		
 		if (nil ~= btype.applicationIdSuffix) then
-			_p ("        applicationIdSuffix = %s", btype.applicationIdSuffix)
+		_p ("            applicationIdSuffix = %s", btype.applicationIdSuffix)
 		end
 		
 		if (nil ~= btype.versionNameSuffix) then
-			_p ("        versionNameSuffix = %s", btype.versionNameSuffix)
+		_p ("            versionNameSuffix = %s", btype.versionNameSuffix)
 		end
 		
-		_p ("        zipAlignEnabled = %s", btype.zipAlignEnabled)
-		_p ("        minifyEnabled = %s", btype.minifyEnabled)
-		_p ("        shrinkResources = %s", btype.shrinkResources)
+		_p ("            zipAlignEnabled = %s", btype.zipAlignEnabled)
+		_p ("            minifyEnabled = %s", btype.minifyEnabled)
+		_p ("            shrinkResources = %s", btype.shrinkResources)
 		
 		if #btype.proguardFiles > 0 then
 	
 			local pattern = path.wildcards ("getDefaultProguardFile")
-			_p ("        proguardFiles = [")
+			_p ("            proguardFiles = [")
 			
 			for _, v in ipairs (btype.proguardFiles) do
 				if string.find (v, pattern) then
-					_p ("            %s,", v)
+					_p ("                %s,", v)
 				else
-					_p ("            %s,", processpath (refpath, v))
+					_p ("                %s,", processpath (refpath, v))
 				end
 			end
-			_p ("        ]")
+			_p ("            ]")
 		end
 		
-		_p ("    }")
+		_p ("        }")
 		
 	end
 	
@@ -228,9 +228,11 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 	_p ("        multiDexEnabled %s", grd_prj.multiDexEnabled)
 	_p ("    }") -- defaultConfig
 	
+	_p ("    buildTypes {")
 	for k, v in pairs(grd_prj._buildTypes) do
-		process_buildtype (k, v)
+		process_buildtype (v)
 	end
+	_p ("    }")
 	
 	_p ("    sourceSets {")
 	_p ("        main {")
@@ -269,7 +271,7 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 		_p ("        enable true")
 		_p ("        reset()")
 		_p ("        universalApk false")
-		_p ("        include " .. table.implode (grd_prj:appabi_names(), "'", "'", ","))
+		_p ("        include " .. table.implode (grd_prj._appabis, "'", "'", ","))
 		_p ("    }")
 		_p ("}")
 		
@@ -278,7 +280,7 @@ premake.gradle.generate_project_app_build_dot_gradle = function (prj)
 		_p ("android.applicationVariants.all { variant ->")
 		_p ("    variant.outputs.each { output ->")
 		local codes = "        def codes = ["
-		for k, v in ipairs (grd_prj:appabi_names()) do
+		for k, v in ipairs (grd_prj._appabis) do
 			codes = codes .. string.format ("'%s':%d, ", v, k)
 		end
 		codes = codes .. "]"

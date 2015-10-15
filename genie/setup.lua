@@ -95,17 +95,17 @@ function mix_setup_project ()
 	if mix_is_android() then
 		local grd_prj = gradle:project(prj.name)
 		
-		grd_prj:appabi ("armeabi"):ndk_extras ("*", {
+		grd_prj:appabis {"armeabi", "armeabi-v7a", "x86"}
+		
+		grd_prj:buildType("Debug"):ndk_extras ("armeabi*", {
 			"LOCAL_ARM_MODE := arm",
 		})
-		grd_prj:appabi ("armeabi-v7a"):ndk_extras ("*", {
+		grd_prj:buildType("Release"):ndk_extras ("armeabi*", {
 			"LOCAL_ARM_MODE := arm",
 		})
-		grd_prj:appabi ("armeabi-v7a"):ndk_extras ("Release", {
+		grd_prj:buildType("Release"):ndk_extras ("armeabi-v7a", {
 			"LOCAL_ARM_NEON := true",
 		})
-		
-		grd_prj:appabi ("x86")
 		
 		grd_prj:ndk_app_ldflags {}
 		grd_prj:ndk_app_cflags {}
@@ -192,8 +192,12 @@ function mix_use_zlib()
 	}
 end
 
-function mix_setup_app ()
-	kind ("WindowedApp")
+function mix_setup_app (_kind)
+
+	if nil == _kind then
+		_kind = "WindowedApp"
+	end
+	kind (_kind)
 	mix_setup_project()
 	
 	includedirs {
@@ -300,11 +304,9 @@ end
 
 function mix_add_unit_tests_project ()
 	project ("mix_unit_tests")
-	kind ("WindowedApp")
-	mix_setup_project()
+	mix_setup_app()
 	
 	includedirs {
-		path.join (BX_DIR, "include"),
 		path.join (GTEST_DIR, "fused-src"),
 		path.join (MIX_DIR, "include/")
 	}

@@ -3,8 +3,8 @@
 #include <mix/mix_application.h>
 #include <mix/mix_frontend.h>
 
-#include <bgfx.h>
-#include <bgfxplatform.h>
+#include <bgfx/bgfx.h>
+#include <bgfx/bgfxplatform.h>
 
 #include <jni.h>
 #include <android/native_window_jni.h>
