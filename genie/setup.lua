@@ -35,6 +35,10 @@ function mix_is_ios()
 	return string.find (_ACTION, "xcode") ~= nil and "ios" == _OPTIONS["xcode"]
 end
 
+function mix_is_tvos()
+	return string.find (_ACTION, "xcode") ~= nil and "tvos" == _OPTIONS["xcode"]
+end
+
 function mix_is_osx()
 	return string.find (_ACTION, "xcode") ~= nil and "osx" == _OPTIONS["xcode"]
 end
@@ -46,41 +50,16 @@ local OUTPATH = path.join(PROJECT_DIR, "build", _ACTION)
 
 if mix_is_ios() then
 	OUTPATH = OUTPATH .. "_ios"
-	
-	-- patch the premake.xcode.getbuildcategory method to support .dat and .zip files as Resources
-	local old_getbuildcategory = premake.xcode.getbuildcategory
-	premake.xcode.getbuildcategory = function(node)
-		local cats = {
-			[".dat"] = "Resources",
-			[".zip"] = "Resources",
-		}
-		
-		local ret = cats[path.getextension(node.name)]
-		if (nil == ret) then
-			return old_getbuildcategory(node)
-		end
-		return ret;
-	end
+end
+
+if mix_is_tvos() then
+	OUTPATH = OUTPATH .. "_tvos"
 end
 
 if mix_is_osx() then
 	OUTPATH = OUTPATH .. "_osx"
-	
-	-- patch the premake.xcode.getbuildcategory method to support .dat and .zip files as Resources
-	local old_getbuildcategory = premake.xcode.getbuildcategory
-	premake.xcode.getbuildcategory = function(node)
-		local cats = {
-			[".dat"] = "Resources",
-			[".zip"] = "Resources",
-		}
-		
-		local ret = cats[path.getextension(node.name)]
-		if (nil == ret) then
-			return old_getbuildcategory(node)
-		end
-		return ret;
-	end
 end
+
 
 location (OUTPATH)
 --targetdir (path.getrelative (path.getabsolute ("."), OUTPATH))
@@ -120,11 +99,18 @@ function mix_setup_project ()
 		}
 	end
 	
+	if mix_is_tvos() then
+		buildoptions {
+			"-std=c++11"
+		}
+	end	
+	
 	if mix_is_osx() then
 		buildoptions {
 			"-std=c++11"
 		}
 	end
+
 end
 
 function mix_setup_staticlib ()
@@ -216,6 +202,17 @@ function mix_setup_app (_kind)
 		}
 	end
 	
+	if mix_is_tvos() then
+		linkoptions {
+			"-framework CoreFoundation",
+			"-framework Foundation",
+			"-framework OpenGLES",
+			"-framework UIKit",
+			"-framework QuartzCore",
+			"-framework Metal",
+		}
+	end
+	
 	if mix_is_osx() then
 		links {
 			"Cocoa.framework",
@@ -271,6 +268,20 @@ function mix_setup_common_app()
 	end
 	
 	if mix_is_ios() then
+		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
+		local runtime_file = path.join ("../runtime/", project().name, "ios/runtime.zip");
+		if os.isfile (runtime_file) then
+			files {runtime_file}
+		end
+		
+		defines { "MIX_IOS" }
+		
+		buildoptions {
+			"-fobjc-arc"
+		}
+	end
+	
+	if mix_is_tvos() then
 		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
 		local runtime_file = path.join ("../runtime/", project().name, "ios/runtime.zip");
 		if os.isfile (runtime_file) then
@@ -349,6 +360,14 @@ function mix_add_unit_tests_project ()
 		}
 	end
 	
+	if mix_is_tvos() then
+		defines { "MIX_IOS" }	
+		files {
+			path.join (MIX_DIR, "src/mix/*ios.mm"),
+			path.join (MIX_DIR, "src/mix/ios/tests/info.plist"),
+		}
+	end
+	
 	if mix_is_osx() then
 		defines { "MIX_OSX" }	
 		files {
@@ -386,6 +405,14 @@ project ("bgfx_static")
 	end
 	
 	if mix_is_ios() then
+		defines {
+			"BGFX_CONFIG_MULTITHREADED=0",
+			"BGFX_CONFIG_RENDERER_METAL=0",
+			"BGFX_CONFIG_RENDERER_OPENGLES=1",
+		}
+	end
+	
+	if mix_is_tvos() then
 		defines {
 			"BGFX_CONFIG_MULTITHREADED=0",
 			"BGFX_CONFIG_RENDERER_METAL=0",

@@ -60,6 +60,7 @@ function toolchain(_buildDir, _libDir)
 		allowed = {
 			{ "osx", "OSX" },
 			{ "ios", "iOS" },
+			{ "tvos", "tvOS" },
 		}
 	}
 
@@ -326,7 +327,7 @@ function toolchain(_buildDir, _libDir)
 			location (path.join(_buildDir, "projects", _ACTION .. "-xp"))
 		end
 
-	elseif _ACTION == "xcode4" then
+	elseif string.find(_ACTION, "xcode") ~= nil then
 
 		if "osx" == _OPTIONS["xcode"] then
 			premake.xcode.toolset = "macosx"
@@ -335,6 +336,14 @@ function toolchain(_buildDir, _libDir)
 		elseif "ios" == _OPTIONS["xcode"] then
 			premake.xcode.toolset = "iphoneos"
 			location (path.join(_buildDir, "projects", _ACTION .. "-ios"))
+			
+		elseif "tvos" == _OPTIONS["xcode"] then
+			premake.xcode.toolset = "appletvos"
+			location (path.join(_buildDir, "projects", _ACTION .. "-tvos"))
+		
+		else
+			error ("xcode platform unknown " .. _OPTIONS["xcode"])
+		
 		end
 	end
 
