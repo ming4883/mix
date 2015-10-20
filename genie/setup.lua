@@ -233,86 +233,6 @@ end
 
 local GTEST_DIR = path.getabsolute (path.join (MIX_DIR, "vendor", "gtest"))
 
-function mix_setup_common_app()
-
-	mix_setup_app()
-	
-	files {
-		path.join (MIX_DIR, "include/mix/*.h"),
-		path.join (MIX_DIR, "src/mix/*.cpp"),
-	}
-	
-	excludes {
-		path.join (MIX_DIR, "src/mix/mix_tests*"),
-	}
-	
-	includedirs {
-		path.join (MIX_DIR, "include/"),
-	}
-	
-	links {
-		"bgfx_static",
-	}
-	
-	if mix_is_android() then
-		defines { "MIX_ANDROID" }
-		
-		local asset_dir = path.join ("../runtime/", project().name, "android")
-		if os.isdir (asset_dir) then
-			gradle:project():assets_srcdirs {asset_dir}
-		end
-	end
-	
-	if mix_is_windows_desktop() then
-		defines { "MIX_WINDOWS_DESKTOP" }
-	end
-	
-	if mix_is_ios() then
-		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
-		local runtime_file = path.join ("../runtime/", project().name, "ios/runtime.zip");
-		if os.isfile (runtime_file) then
-			files {runtime_file}
-		end
-		
-		defines { "MIX_IOS" }
-		
-		buildoptions {
-			"-fobjc-arc"
-		}
-	end
-	
-	if mix_is_tvos() then
-		files { path.join (MIX_DIR, "src/mix/*ios.mm") }
-		local runtime_file = path.join ("../runtime/", project().name, "ios/runtime.zip");
-		if os.isfile (runtime_file) then
-			files {runtime_file}
-		end
-		
-		defines { "MIX_IOS" }
-		
-		buildoptions {
-			"-fobjc-arc"
-		}
-	end
-	
-	if mix_is_osx() then
-		files { path.join (MIX_DIR, "src/mix/*osx.mm") }
-		local runtime_file = path.join ("../runtime/", project().name, "osx/runtime.zip");
-		if os.isfile (runtime_file) then
-			files {runtime_file}
-		end
-		
-		defines { "MIX_OSX" }
-		
-		buildoptions {
-			"-fobjc-arc"
-		}
-	end
-	
-	mix_use_zlib()
-	
-end
-
 function mix_add_unit_tests_project ()
 	project ("mix_unit_tests")
 	mix_setup_app()
@@ -363,7 +283,7 @@ function mix_add_unit_tests_project ()
 	if mix_is_tvos() then
 		defines { "MIX_IOS" }	
 		files {
-			path.join (MIX_DIR, "src/mix/*ios.mm"),
+			path.join (MIX_DIR, "src/mix/*tvos.mm"),
 			path.join (MIX_DIR, "src/mix/ios/tests/info.plist"),
 		}
 	end
