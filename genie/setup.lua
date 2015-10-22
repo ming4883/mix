@@ -103,6 +103,9 @@ function mix_setup_project ()
 		buildoptions {
 			"-std=c++11"
 		}
+		includedirs {
+			"${SDK_DIR}/usr/include/malloc", -- for include <malloc.h> compatibility
+		}
 	end	
 	
 	if mix_is_osx() then
