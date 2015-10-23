@@ -17,6 +17,10 @@ namespace FrontendEventType
         TouchMove,
         TouchUp,
         TouchCancel,
+        SwipeLeft,
+        SwipeRight,
+        SwipeUp,
+        SwipeDown,
     };
 } // namespace FrontendEventType
 
@@ -80,7 +84,7 @@ public:
     {
         struct
         {
-            float x, y;
+            float x, y, z, w;
         } location;
 
         struct
@@ -99,16 +103,28 @@ public:
     static FrontendEvent* closed ();
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchDown
-    static FrontendEvent* touchDown (float _x, float _y, size_t touchid);
+    static FrontendEvent* touchDown (size_t _touchid, float _x, float _y, float _z, float _w);
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchMove
-    static FrontendEvent* touchMove (float _x, float _y, size_t touchid);
+    static FrontendEvent* touchMove (size_t _touchid, float _x, float _y, float _z, float _w);
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchUp
-    static FrontendEvent* touchUp (float _x, float _y, size_t touchid);
+    static FrontendEvent* touchUp (size_t _touchid, float _x, float _y, float _z, float _w);
 
     //! Create a FrontendEvent with type = FrontendEventType::TouchCancel
-    static FrontendEvent* touchCancel (float _x, float _y, size_t touchid);
+    static FrontendEvent* touchCancel (size_t _touchid, float _x, float _y, float _z, float _w);
+
+    //! Create a FrontendEvent with type = FrontendEventType::SwipLeft
+    static FrontendEvent* swipeLeft (float _x, float _y, float _z, float _w);
+
+    //! Create a FrontendEvent with type = FrontendEventType::SwipLeft
+    static FrontendEvent* swipeRight (float _x, float _y, float _z, float _w);
+
+    //! Create a FrontendEvent with type = FrontendEventType::SwipUp
+    static FrontendEvent* swipeUp (float _x, float _y, float _z, float _w);
+
+    //! Create a FrontendEvent with type = FrontendEventType::SwipDown
+    static FrontendEvent* swipeDown (float _x, float _y, float _z, float _w);
 
 };
 

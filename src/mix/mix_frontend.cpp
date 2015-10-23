@@ -57,39 +57,87 @@ namespace mix
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchDown (float _x, float _y, size_t _touchid)
+    FrontendEvent* FrontendEvent::touchDown (size_t _touchid, float _x, float _y, float _z, float _w)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchDown);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
         _this->touchid = _touchid;
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchMove (float _x, float _y, size_t _touchid)
+    FrontendEvent* FrontendEvent::touchMove (size_t _touchid, float _x, float _y, float _z, float _w)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchMove);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
         _this->touchid = _touchid;
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchUp (float _x, float _y, size_t _touchid)
+    FrontendEvent* FrontendEvent::touchUp (size_t _touchid, float _x, float _y, float _z, float _w)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchUp);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
         _this->touchid = _touchid;
         return _this;
     }
 
-    FrontendEvent* FrontendEvent::touchCancel (float _x, float _y, size_t _touchid)
+    FrontendEvent* FrontendEvent::touchCancel (size_t _touchid, float _x, float _y, float _z, float _w)
     {
         FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchCancel);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
         _this->touchid = _touchid;
+        return _this;
+    }
+
+    FrontendEvent* FrontendEvent::swipeLeft (float _x, float _y, float _z, float _w)
+    {
+        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeLeft);
+        _this->params.location.x = _x;
+        _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
+        return _this;
+    }
+
+    FrontendEvent* FrontendEvent::swipeRight (float _x, float _y, float _z, float _w)
+    {
+        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeRight);
+        _this->params.location.x = _x;
+        _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
+        return _this;
+    }
+
+    FrontendEvent* FrontendEvent::swipeUp (float _x, float _y, float _z, float _w)
+    {
+        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeUp);
+        _this->params.location.x = _x;
+        _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
+        return _this;
+    }
+
+    FrontendEvent* FrontendEvent::swipeDown (float _x, float _y, float _z, float _w)
+    {
+        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeDown);
+        _this->params.location.x = _x;
+        _this->params.location.y = _y;
+        _this->params.location.z = _z;
+        _this->params.location.w = _w;
         return _this;
     }
 }

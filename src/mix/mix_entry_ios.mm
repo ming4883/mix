@@ -22,6 +22,10 @@
 {
     std::map<id, int> m_touchMappings;
     int m_touchid;
+    UISwipeGestureRecognizer* m_swipLeft;
+    UISwipeGestureRecognizer* m_swipRight;
+    UISwipeGestureRecognizer* m_swipUp;
+    UISwipeGestureRecognizer* m_swipDown;
 }
 
 + (Class)layerClass
@@ -40,6 +44,20 @@
 
     self.multipleTouchEnabled = YES;
     m_touchid = 0;
+    m_swipLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureHandleSwipeLeft)];
+    m_swipRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureHandleSwipeRight)];
+    m_swipUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureHandleSwipeUp)];
+    m_swipDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(gestureHandleSwipeDown)];
+
+    m_swipLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    m_swipRight.direction = UISwipeGestureRecognizerDirectionRight;
+    m_swipUp.direction = UISwipeGestureRecognizerDirectionUp;
+    m_swipDown.direction = UISwipeGestureRecognizerDirectionDown;
+
+    [self addGestureRecognizer:m_swipLeft];
+    [self addGestureRecognizer:m_swipRight];
+    [self addGestureRecognizer:m_swipUp];
+    [self addGestureRecognizer:m_swipDown];
 
     return self;
 }
@@ -122,8 +140,10 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
+        float _force = _touch.force;
+        float _maxForce = _touch.maximumPossibleForce;
 
-        mix::theApp()->pushEvent(mix::FrontendEvent::touchDown(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchDown([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
     }
 }
 
@@ -139,8 +159,10 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
+        float _force = _touch.force;
+        float _maxForce = _touch.maximumPossibleForce;
 
-        mix::theApp()->pushEvent(mix::FrontendEvent::touchMove(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchMove([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
     }
 }
 
@@ -156,8 +178,10 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
+        float _force = _touch.force;
+        float _maxForce = _touch.maximumPossibleForce;
 
-        mix::theApp()->pushEvent(mix::FrontendEvent::touchUp(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchUp([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
 
         [self touchMappingRemove:_touch];
     }
@@ -175,11 +199,33 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
+        float _force = _touch.force;
+        float _maxForce = _touch.maximumPossibleForce;
 
-        mix::theApp()->pushEvent(mix::FrontendEvent::touchCancel(_pt.x, _pt.y, [self touchMappingOf:_touch]));
+        mix::theApp()->pushEvent(mix::FrontendEvent::touchCancel([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
 
         [self touchMappingRemove:_touch];
     }
+}
+
+- (void)gestureHandleSwipeLeft
+{
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeLeft (0, 0, 0, 0));
+}
+
+- (void)gestureHandleSwipeRight
+{
+   mix::theApp()->pushEvent(mix::FrontendEvent::swipeRight (0, 0, 0, 0));
+}
+
+- (void)gestureHandleSwipeUp
+{
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeUp (0, 0, 0, 0));
+}
+
+- (void)gestureHandleSwipeDown
+{
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeDown (0, 0, 0, 0));
 }
 
 @end
