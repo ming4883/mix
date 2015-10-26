@@ -234,22 +234,26 @@
 
 - (void)gestureHandleSwipeLeft
 {
-    mix::theApp()->pushEvent(mix::FrontendEvent::swipeLeft (0, 0, 0, 0));
+    CGPoint _loc = [m_swipLeft locationInView:self];
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeLeft (_loc.x, _loc.y, 0, 0));
 }
 
 - (void)gestureHandleSwipeRight
 {
-   mix::theApp()->pushEvent(mix::FrontendEvent::swipeRight (0, 0, 0, 0));
+    CGPoint _loc = [m_swipRight locationInView:self];
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeRight (_loc.x, _loc.y, 0, 0));
 }
 
 - (void)gestureHandleSwipeUp
 {
-    mix::theApp()->pushEvent(mix::FrontendEvent::swipeUp (0, 0, 0, 0));
+    CGPoint _loc = [m_swipUp locationInView:self];
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeUp (_loc.x, _loc.y, 0, 0));
 }
 
 - (void)gestureHandleSwipeDown
 {
-    mix::theApp()->pushEvent(mix::FrontendEvent::swipeDown (0, 0, 0, 0));
+    CGPoint _loc = [m_swipDown locationInView:self];
+    mix::theApp()->pushEvent(mix::FrontendEvent::swipeDown (_loc.x, _loc.y, 0, 0));
 }
 
 @end
