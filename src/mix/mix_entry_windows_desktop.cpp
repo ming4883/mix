@@ -135,7 +135,7 @@ public:
 
         mouseState |= _mouseid;
 
-        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown ((float)_mousex, (float)_mousey, _mouseid));
+        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (_mouseid, (float)_mousex, (float)_mousey, 0, 0));
     }
 
     void handle_WM_XBUTTONUP (UINT _msg, WPARAM _wParam, LPARAM _lParam)
@@ -150,9 +150,9 @@ public:
             ReleaseCapture ();
 
         if (isOutside (_mousex, _mousey))
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel ((float)_mousex, (float)_mousey, _mouseid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel (_mouseid, (float)_mousex, (float)_mousey, 0, 0));
         else
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchUp ((float)_mousex, (float)_mousey, _mouseid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchUp (_mouseid, (float)_mousex, (float)_mousey, 0, 0));
     }
     
     void handle_WM_MOUSEMOVE (WPARAM _wParam, LPARAM _lParam)
@@ -172,7 +172,7 @@ public:
             if (_wParam & (MK_MBUTTON))
                 touchid |= mix::FrontendMouseId::Middle;
 
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchMove ((float)_mousex, (float)_mousey, touchid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchMove (touchid, (float)_mousex, (float)_mousey, 0, 0));
         }
     }
     

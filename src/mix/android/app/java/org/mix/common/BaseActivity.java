@@ -1,12 +1,12 @@
 package org.mix.common;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
@@ -47,6 +47,10 @@ public class BaseActivity extends android.app.Activity {
         TouchMove,
         TouchUp,
         TouchCancel,
+        SwipeLeft,
+        SwipeRight,
+        SwipeUp,
+        SwipeDown,
     }
 
     public enum NativeApplicationEvent
@@ -133,6 +137,8 @@ public class BaseActivity extends android.app.Activity {
 
         public NativeCode nativeCode;
 
+        private GestureDetector gestureDetector;
+
         public BaseView(Context ctx) {
             super(ctx);
             log("BaseView()");
@@ -142,6 +148,25 @@ public class BaseActivity extends android.app.Activity {
 
             nativeCode = new NativeCode();
             nativeCode.start();
+
+            gestureDetector = new GestureDetector(ctx, new GestureDetector.SimpleOnGestureListener() {
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velo_x, float velo_y) {
+                    float attr_x = Math.abs(velo_x);
+                    float attr_y = Math.abs(velo_y);
+
+                    if (attr_x > attr_y)
+                    {
+                        NativeFrontendEvent evt_type = (velo_x > 0 ? NativeFrontendEvent.SwipeRight : NativeFrontendEvent.SwipeLeft);
+                        NativeCode.handleFrontendEvent(evt_type.ordinal(), 0, velo_x, velo_y);
+                    }
+                    else
+                    {
+                        NativeFrontendEvent evt_type = (velo_y > 0 ? NativeFrontendEvent.SwipeDown : NativeFrontendEvent.SwipeUp);
+                        NativeCode.handleFrontendEvent(evt_type.ordinal(), 0, velo_x, velo_y);
+                    }
+                    return true;
+                }
+            });
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -160,6 +185,7 @@ public class BaseActivity extends android.app.Activity {
         @Override
         public boolean onTouchEvent (MotionEvent evt) {
 
+            gestureDetector.onTouchEvent(evt);
             // https://developer.android.com/training/gestures/multi.html
             // http://www.vogella.com/tutorials/AndroidTouch/article.html
             int actionType = evt.getActionMasked();

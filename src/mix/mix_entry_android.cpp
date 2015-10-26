@@ -86,22 +86,42 @@ extern "C" {
 		
 		if (evt == mix::FrontendEventType::TouchDown)
         {
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (param0, param1, (size_t)touchid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchDown ((size_t)touchid, param0, param1, 0, 0));
         }
 		
 		if (evt == mix::FrontendEventType::TouchUp)
         {
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchUp (param0, param1, (size_t)touchid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchUp ((size_t)touchid, param0, param1, 0, 0));
         }
 		
 		if (evt == mix::FrontendEventType::TouchMove)
         {
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchMove (param0, param1, (size_t)touchid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchMove ((size_t)touchid, param0, param1, 0, 0));
         }
 		
 		if (evt == mix::FrontendEventType::TouchCancel)
         {
-            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel (param0, param1, (size_t)touchid));
+            mix::theApp()->pushEvent (mix::FrontendEvent::touchCancel ((size_t)touchid, param0, param1, 0, 0));
+        }
+
+        if (evt == mix::FrontendEventType::SwipeLeft)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::swipeLeft (param0, param1, 0, 0));
+        }
+
+        if (evt == mix::FrontendEventType::SwipeRight)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::swipeRight (param0, param1, 0, 0));
+        }
+
+        if (evt == mix::FrontendEventType::SwipeUp)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::swipeUp (param0, param1, 0, 0));
+        }
+
+        if (evt == mix::FrontendEventType::SwipeDown)
+        {
+            mix::theApp()->pushEvent (mix::FrontendEvent::swipeDown (param0, param1, 0, 0));
         }
 
         //mix::theApp()->processQueuedEvents();
