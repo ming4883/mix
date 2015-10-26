@@ -140,8 +140,14 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
-        float _force = _touch.force;
-        float _maxForce = _touch.maximumPossibleForce;
+        float _force = 0;
+        float _maxForce = 0;
+
+        if ([_touch respondsToSelector:NSSelectorFromString (@"force")])
+        {
+            _force = _touch.force;
+            _maxForce = _touch.maximumPossibleForce;
+        }
 
         mix::theApp()->pushEvent(mix::FrontendEvent::touchDown([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
     }
@@ -159,8 +165,14 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
-        float _force = _touch.force;
-        float _maxForce = _touch.maximumPossibleForce;
+        float _force = 0;
+        float _maxForce = 0;
+
+        if ([_touch respondsToSelector:NSSelectorFromString (@"force")])
+        {
+            _force = _touch.force;
+            _maxForce = _touch.maximumPossibleForce;
+        }
 
         mix::theApp()->pushEvent(mix::FrontendEvent::touchMove([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
     }
@@ -178,8 +190,14 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
-        float _force = _touch.force;
-        float _maxForce = _touch.maximumPossibleForce;
+        float _force = 0;
+        float _maxForce = 0;
+
+        if ([_touch respondsToSelector:NSSelectorFromString (@"force")])
+        {
+            _force = _touch.force;
+            _maxForce = _touch.maximumPossibleForce;
+        }
 
         mix::theApp()->pushEvent(mix::FrontendEvent::touchUp([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
 
@@ -199,8 +217,14 @@
         CGPoint _pt = [_touch locationInView:self];
         _pt.x *= _screenscale;
         _pt.y *= _screenscale;
-        float _force = _touch.force;
-        float _maxForce = _touch.maximumPossibleForce;
+        float _force = 0;
+        float _maxForce = 0;
+
+        if ([_touch respondsToSelector:NSSelectorFromString (@"force")])
+        {
+            _force = _touch.force;
+            _maxForce = _touch.maximumPossibleForce;
+        }
 
         mix::theApp()->pushEvent(mix::FrontendEvent::touchCancel([self touchMappingOf:_touch], _pt.x, _pt.y, _force, _maxForce));
 
