@@ -94,41 +94,39 @@ TEST_F (TestsOfEvent, EventQueue_Operations)
 
 TEST_F (TestsOfEvent, EventQueue_Multithread)
 {
-    struct Local
+    enum { CNT = 1024 };
+
+    auto _lambda = [] (void* _userData)
     {
-        enum { CNT = 1024 };
+        mix::EventQueue* _queue = static_cast<mix::EventQueue*> (_userData);
 
-        static int32_t task (void* _userData)
+        for (int i = 0; i < CNT; ++i)
         {
-            mix::EventQueue* queue = static_cast<mix::EventQueue*> (_userData);
-
-            for (int i = 0; i < CNT; ++i)
-            {
-                queue->push (new TestEvent (i));
-                bx::yield();
-            }
-
-            return 0;
+            _queue->push (new TestEvent (i));
+            bx::yield();
         }
+
+        return 0u;
     };
-    mix::EventQueue queue;
 
-    EXPECT_TRUE (queue.isEmpty());
+    mix::EventQueue _queue;
+    EXPECT_TRUE (_queue.isEmpty());
 
-    bx::Thread t1, t2;
-    t1.init (Local::task, &queue);
-    t2.init (Local::task, &queue);
-    
-    int cnt = 0;
-    while (cnt < Local::CNT * 2)
+
+    mix::ThreadWithLambda _t1 (std::move (_lambda)), _t2 (std::move (_lambda));
+    _t1.init (&_queue, 0u, "EventQueue_Multithread_t1");
+    _t2.init (&_queue, 0u, "EventQueue_Multithread_t2");
+
+    int _cnt = 0;
+    while (_cnt < CNT * 2)
     {
-        if (queue.peek() != nullptr)
+        if (_queue.peek() != nullptr)
         {
-            queue.discard();
-            ++cnt;
+            _queue.discard();
+            ++_cnt;
         }
     }
 
-    EXPECT_TRUE (queue.isEmpty());
+    EXPECT_TRUE (_queue.isEmpty());
 
 }

@@ -1,5 +1,6 @@
 #include <mix/mix_asset.h>
 
+#if !defined (MIX_TESTS)
 namespace mix
 {
 #if 0
@@ -12,3 +13,4 @@ namespace mix
     }
 #endif
 }
+#endif

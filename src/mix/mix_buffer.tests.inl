@@ -1,6 +1,5 @@
 #include <mix/mix_tests.h>
 
-
 class TestsOfBuffer : public ::testing::Test
 {
 public:

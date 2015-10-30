@@ -1,3 +1,4 @@
+#if !defined (MIX_TESTS)
 #if defined (MIX_WINDOWS_DESKTOP)
 
 #include <mix/mix_asset.h>
@@ -88,3 +89,4 @@ namespace mix
 }
 
 #endif // #if defined (MIX_WINDOWS_DESKTOP)
+#endif // #if !defined (MIX_TESTS)

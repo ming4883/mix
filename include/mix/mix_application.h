@@ -45,7 +45,7 @@ public:
     static ApplicationEvent* didEnterForeground();
 };
 
-class Application
+class BX_NO_VTABLE Application
 {
 
 public:

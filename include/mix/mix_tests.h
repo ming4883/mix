@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include <bx/thread.h>
+#include <functional>
 
 namespace mix
 {
@@ -150,6 +151,35 @@ public:
         output (test_result.Failed(), msg);
     }
 
+};
+
+class ThreadWithLambda : public bx::Thread
+{
+public:
+    typedef std::function<int32_t (void*)> Func;
+    
+    ThreadWithLambda (Func&& _func) : m_func (_func)
+    {
+
+    }
+
+    void init(void* _userdata, uint32_t _stackSize = 0, const char* _name = NULL)
+    {
+        m_userdata = _userdata;
+        bx::Thread::init (&threadCallback, this, _stackSize, _name);
+    }
+
+private:
+    Func m_func;
+    void* m_userdata;
+
+    using bx::Thread::init;
+
+    static int32_t threadCallback (void* _userData)
+    {
+        ThreadWithLambda* _this = reinterpret_cast<ThreadWithLambda*> (_userData);
+        return _this->m_func (_this->m_userdata);
+    }
 };
 
 } // namespace mix

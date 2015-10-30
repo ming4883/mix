@@ -1,3 +1,5 @@
+#if !defined (MIX_TESTS)
+
 #include <mix/mix_asset.h>
 #include <mix/mix_log.h>
 #include <mix/mix_zipfile.h>
@@ -98,3 +100,5 @@ namespace mix
         return AssetImpl::sharedInst.load(_outBuffer, _assetname);
     }
 }
+
+#endif // #if !defined (MIX_TESTS)

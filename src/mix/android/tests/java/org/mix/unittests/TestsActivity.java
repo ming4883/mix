@@ -1,4 +1,4 @@
-package org.mix.common;
+package org.mix.unittests;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -75,7 +75,7 @@ public class TestsActivity extends android.app.Activity {
     protected String[] getLibraries() {
         return new String[] {
             "gnustl_shared",
-            "mix_common_tests"
+            "mix_unit_tests"
         };
     }
 

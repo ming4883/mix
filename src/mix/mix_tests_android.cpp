@@ -6,6 +6,8 @@
 #include <jni.h>
 #include <android/log.h>
 
+#define LOG_TAG "org_mix_unittests"
+
 class JNILogger
 {
 public:
@@ -35,7 +37,7 @@ public:
         mth = env->GetMethodID (cls, "appendLog", "(ZLjava/lang/String;)V");
 
         if (!mth)
-            mix::Log::e ("org_mix_common", "JNILogger method not found!");
+            mix::Log::e (LOG_TAG, "JNILogger method not found!");
     }
 
     void shutdown()
@@ -65,13 +67,13 @@ namespace mix
         JNILogger::inst.appendLog (_isError, _msg);
 
         if (_isError)
-            mix::Log::e ("org_mix_common", _msg.str().c_str());
+            mix::Log::e (LOG_TAG, _msg.str().c_str());
         else
-            mix::Log::i ("org_mix_common", _msg.str().c_str());
+            mix::Log::i (LOG_TAG, _msg.str().c_str());
     }
 }
 
-#define JNIMETHOD(type, method) JNIEXPORT type JNICALL Java_org_mix_common_TestsActivity_ ## method
+#define JNIMETHOD(type, method) JNIEXPORT type JNICALL Java_org_mix_unittests_TestsActivity_ ## method
 
 // JNI native method
 extern "C" {
