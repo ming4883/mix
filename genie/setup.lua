@@ -284,7 +284,7 @@ function mix_add_unit_tests_project ()
 	end
 	
 	if mix_is_tvos() then
-		defines { "MIX_IOS" }	
+		defines { "MIX_TVOS" }	
 		files {
 			path.join (MIX_DIR, "src/mix/*tvos.mm"),
 			path.join (MIX_DIR, "src/mix/ios/tests/info.plist"),

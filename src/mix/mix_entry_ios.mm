@@ -54,6 +54,11 @@
     m_swipUp.direction = UISwipeGestureRecognizerDirectionUp;
     m_swipDown.direction = UISwipeGestureRecognizerDirectionDown;
 
+    m_swipLeft.cancelsTouchesInView = NO;
+    m_swipRight.cancelsTouchesInView = NO;
+    m_swipUp.cancelsTouchesInView = NO;
+    m_swipDown.cancelsTouchesInView = NO;
+
     [self addGestureRecognizer:m_swipLeft];
     [self addGestureRecognizer:m_swipRight];
     [self addGestureRecognizer:m_swipUp];
