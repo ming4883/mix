@@ -338,9 +338,9 @@
 # endif  // _WIN32_WCE
 #elif defined __APPLE__
 # define GTEST_OS_MAC 1
-# if TARGET_OS_IPHONE
+# if TARGET_OS_IOS || TARGET_OS_TV
 #  define GTEST_OS_IOS 1
-#  if TARGET_IPHONE_SIMULATOR
+#  if TARGET_OS_SIMULATOR
 #   define GTEST_OS_IOS_SIMULATOR 1
 #  endif
 # endif
@@ -1750,7 +1750,7 @@ using ::std::tuple_size;
 // abort() in a VC 7.1 application compiled as GUI in debug config
 // pops up a dialog window that cannot be suppressed programmatically.
 #if (GTEST_OS_LINUX || GTEST_OS_CYGWIN || GTEST_OS_SOLARIS || \
-     (GTEST_OS_MAC && !GTEST_OS_IOS) || GTEST_OS_IOS_SIMULATOR || \
+     (GTEST_OS_MAC && !GTEST_OS_IOS) || \
      (GTEST_OS_WINDOWS_DESKTOP && _MSC_VER >= 1400) || \
      GTEST_OS_WINDOWS_MINGW || GTEST_OS_AIX || GTEST_OS_HPUX || \
      GTEST_OS_OPENBSD || GTEST_OS_QNX)
