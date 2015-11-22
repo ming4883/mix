@@ -127,7 +127,7 @@
 {
     CGPoint _pt = [self getMouseLocation:_evt];
     if (_pt.y >= 0)
-        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (_pt.x, _pt.y, _mid));
+        mix::theApp()->pushEvent (mix::FrontendEvent::touchDown (_mid, _pt.x, _pt.y, 0, 0));
 }
 
 - (void) handleMouseUp:(NSEvent*) _evt
@@ -135,7 +135,7 @@
 {
     CGPoint _pt = [self getMouseLocation:_evt];
     if (_pt.y >= 0)
-        mix::theApp()->pushEvent (mix::FrontendEvent::touchUp (_pt.x, _pt.y, _mid));
+        mix::theApp()->pushEvent (mix::FrontendEvent::touchUp (_mid, _pt.x, _pt.y, 0, 0));
 
 }
 
