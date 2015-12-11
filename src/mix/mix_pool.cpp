@@ -12,8 +12,8 @@ PoolNode* PoolNode::create (AllocatorI& _allocator, size_t _itemSize, size_t _ca
         return nullptr;
 
     memset (_memptr, 0, _itemSize * _capacity);
-	
-	void* _objptr = _allocator.allocate (sizeof (PoolNode));
+    
+    void* _objptr = _allocator.allocate (sizeof (PoolNode));
     if (!_objptr)
         return nullptr;
 

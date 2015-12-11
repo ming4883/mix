@@ -3,6 +3,8 @@
 
 namespace mix
 {
+    typedef SharedPool<FrontendEvent, 16u, 256u> FrontendEventPool;
+
     FrontendDesc FrontendDesc::descAuto = FrontendDesc()
         .setLeft (FrontendDesc::PositionCentered)
         .setTop (FrontendDesc::PositionCentered)
@@ -28,7 +30,7 @@ namespace mix
     {
         if (_event->is<FrontendEvent>())
         {
-            delete static_cast<FrontendEvent*> (_event);
+            FrontendEventPool::get().delObject (static_cast<FrontendEvent*> (_event));
         }
     }
 
@@ -45,7 +47,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::resized (int _w, int _h)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::Resized);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::Resized);
         _this->params.size.w = _w;
         _this->params.size.h = _h;
         return _this;
@@ -53,13 +55,13 @@ namespace mix
     
     FrontendEvent* FrontendEvent::closed ()
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::Closed);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::Closed);
         return _this;
     }
 
     FrontendEvent* FrontendEvent::touchDown (size_t _touchid, float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchDown);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::TouchDown);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -70,7 +72,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::touchMove (size_t _touchid, float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchMove);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::TouchMove);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -81,7 +83,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::touchUp (size_t _touchid, float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchUp);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::TouchUp);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -92,7 +94,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::touchCancel (size_t _touchid, float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::TouchCancel);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::TouchCancel);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -103,7 +105,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::swipeLeft (float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeLeft);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::SwipeLeft);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -113,7 +115,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::swipeRight (float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeRight);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::SwipeRight);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -123,7 +125,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::swipeUp (float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeUp);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::SwipeUp);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;
@@ -133,7 +135,7 @@ namespace mix
 
     FrontendEvent* FrontendEvent::swipeDown (float _x, float _y, float _z, float _w)
     {
-        FrontendEvent* _this = new FrontendEvent (FrontendEventType::SwipeDown);
+        FrontendEvent* _this = FrontendEventPool::get().newObject (FrontendEventType::SwipeDown);
         _this->params.location.x = _x;
         _this->params.location.y = _y;
         _this->params.location.z = _z;

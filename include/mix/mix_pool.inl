@@ -21,40 +21,23 @@ Pool<TRAITS>::Pool (AllocatorI& _allocator, size_t _nodeCapacityInitial, size_t 
 template<typename TRAITS>
 Pool<TRAITS>::~Pool()
 {
-    SyncWrite _sync (m_syncHandle);
-
     if (m_countOfObjects)
     {
-        PoolNode* _node = &m_nodeFirst;
+        delAllObjects();
+    }
+
+    // deallocate memory of all nodes
+    {
+        SyncWrite _sync (m_syncHandle);
+        PoolNode* _node = m_nodeFirst.m_nextNode;
         while (_node)
         {
             PoolNode* _nextNode = _node->m_nextNode;
-
-            char* _address = (char*)_node->m_memory;
-            for (size_t i = 0; i < _node->m_capacity; ++i)
-            {
-                if (isAllocated (_address))
-                {
-                    Object* _obj = (Object*)(_address + POINTER_SIZE);
-                    _obj->~Object();
-                }
-
-                _address += OBJECT_SIZE;
-            }
+            _node->~PoolNode();
+            m_allocator.deallocate (_node);
+        
             _node = _nextNode;
         }
-
-        m_countOfObjects = 0;
-    }
-
-    PoolNode* _node = m_nodeFirst.m_nextNode;
-    while (_node)
-    {
-        PoolNode* _nextNode = _node->m_nextNode;
-        _node->~PoolNode();
-        m_allocator.deallocate (_node);
-        
-        _node = _nextNode;
     }
 }
 
@@ -92,10 +75,13 @@ typename Pool<TRAITS>::Object* Pool<TRAITS>::allocate()
 
     if (m_firstDeleted)
     {
-        Object* _ret = m_firstDeleted;
+        Object* _content = m_firstDeleted;
         m_firstDeleted = * ((Object**)m_firstDeleted);
+        char* _address = (char*)_content - HEADER_SIZE;
+        assert (!isAllocated(_address));
+        markAllocated (_address);
         m_countOfObjects++;
-        return _ret;
+        return _content;
     }
 
     if (m_countInNode >= m_nodeCapacityCurr)
@@ -167,7 +153,7 @@ template<typename TRAITS>
 template<typename... ARGS>
 typename Pool<TRAITS>::Object* Pool<TRAITS>::newObject(ARGS... _args)
 {
-	return AllocatorHelper::invokeNew<Object> (m_allocator, allocate(), _args...);
+    return AllocatorHelper::invokeNew<Object> (m_allocator, allocate(), _args...);
     //return new (allocate()) Object (_args...);
 }
 
@@ -181,6 +167,53 @@ bool Pool<TRAITS>::delObject(Object* _content)
 
     release (_content);
     return true;
+}
+
+template<typename TRAITS>
+int Pool<TRAITS>::delAllObjects()
+{
+    SyncWrite _sync (m_syncHandle);
+
+    size_t _lastCount = m_countOfObjects;
+    PoolNode* _node = &m_nodeFirst;
+
+    Object* _lastContent = nullptr;
+
+    // Iterate each Object in each Node
+    while (_node)
+    {
+        PoolNode* _nextNode = _node->m_nextNode;
+
+        char* _address = (char*)_node->m_memory;
+        for (size_t i = 0; i < _node->m_capacity; ++i)
+        {
+            Object* _content = (Object*) (_address + HEADER_SIZE);
+
+            if (isAllocated (_address))
+            {
+                // invoke the destructor of any allocated object
+                _content->~Object();
+                unmarkAllocated (_address);
+            }
+
+            // rebuild the free-list so that objects can be allocated in the same order as foreach.
+            if (_lastContent)
+                * ((Object**)_lastContent) = _content; 
+            else
+                m_firstDeleted = _content;
+
+            _lastContent = _content;
+
+            _address += OBJECT_SIZE;
+        }
+        _node = _nextNode;
+    }
+
+    if (_lastContent)
+        * ((Object**)_lastContent) = nullptr;
+
+    m_countOfObjects = 0;
+    return _lastCount;
 }
 
 template<typename TRAITS>
@@ -208,7 +241,7 @@ void Pool<TRAITS>::foreach (const std::function<bool (Object*)>& _func)
         {
             if (isAllocated (_address))
             {
-                if (!_func ((Object*)(_address + POINTER_SIZE)))
+                if (!_func ((Object*)(_address + HEADER_SIZE)))
                     return;
             }
 

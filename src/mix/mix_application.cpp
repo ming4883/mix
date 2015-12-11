@@ -5,6 +5,8 @@
 
 namespace mix
 {
+    typedef SharedPool<ApplicationEvent, 8u, 256u> ApplicationEventPool;
+
     EventTypeId ApplicationEvent::getEventTypeId()
     {
         return EventTypeId ("ApplicationEvent");
@@ -14,7 +16,7 @@ namespace mix
     {
         if (_event->is<ApplicationEvent>())
         {
-            delete static_cast<ApplicationEvent*> (_event);
+            ApplicationEventPool::get().delObject (static_cast<ApplicationEvent*> (_event));
         }
     }
 
@@ -26,37 +28,37 @@ namespace mix
 
     ApplicationEvent* ApplicationEvent::terminating()
     {
-        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::Terminating);
+        ApplicationEvent* _this = ApplicationEventPool::get().newObject (ApplicationEventType::Terminating);
         return _this;
     }
 
     ApplicationEvent* ApplicationEvent::lowMemory()
     {
-        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::LowMemory);
+        ApplicationEvent* _this = ApplicationEventPool::get().newObject (ApplicationEventType::LowMemory);
         return _this;
     }
 
     ApplicationEvent* ApplicationEvent::willEnterBackground()
     {
-        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::WillEnterBackground);
+        ApplicationEvent* _this = ApplicationEventPool::get().newObject (ApplicationEventType::WillEnterBackground);
         return _this;
     }
 
     ApplicationEvent* ApplicationEvent::didEnterBackground()
     {
-        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::DidEnterBackground);
+        ApplicationEvent* _this = ApplicationEventPool::get().newObject (ApplicationEventType::DidEnterBackground);
         return _this;
     }
 
     ApplicationEvent* ApplicationEvent::willEnterForeground()
     {
-        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::WillEnterForeground);
+        ApplicationEvent* _this = ApplicationEventPool::get().newObject (ApplicationEventType::WillEnterForeground);
         return _this;
     }
 
     ApplicationEvent* ApplicationEvent::didEnterForeground()
     {
-        ApplicationEvent* _this = new ApplicationEvent (ApplicationEventType::DidEnterForeground);
+        ApplicationEvent* _this = ApplicationEventPool::get().newObject (ApplicationEventType::DidEnterForeground);
         return _this;
     }
 

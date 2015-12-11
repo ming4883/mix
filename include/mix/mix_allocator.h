@@ -18,7 +18,7 @@ struct mixIsAllocatorOwner
 
 namespace mix
 {
-    
+
 class BX_NO_VTABLE AllocatorI
 {
 public:
@@ -29,6 +29,9 @@ public:
     virtual void* reallocate (void* _ptr, size_t _size) = 0;
 
     virtual void deallocate (void* _ptr) = 0;
+
+public:
+    static AllocatorI& getDefault();
 };
 
 inline AllocatorI::~AllocatorI()

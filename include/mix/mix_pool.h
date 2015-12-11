@@ -61,6 +61,10 @@ public:
 
     bool delObject (Object* _content);
 
+    /*! Delete all allocated objects and return the number of objects being deleted.
+     */
+    int delAllObjects();
+
     /*! Returns the number of living objects in this Pool.
      */
     size_t getObjectCount() const;
@@ -83,11 +87,11 @@ private:
     void* m_nodeMemory;
     Object* m_firstDeleted;
     PoolNode* m_nodeLast;
-	PoolNode m_nodeFirst;
-	
-	const size_t m_nodeCapacityMax;
+    PoolNode m_nodeFirst;
+    
+    const size_t m_nodeCapacityMax;
     size_t m_nodeCapacityCurr;
-	size_t m_countInNode;
+    size_t m_countInNode;
     size_t m_countOfObjects;
     
     bool allocateNewNode();
@@ -107,7 +111,23 @@ private:
     inline bool isAllocated (void* _address) { return (getFlags (_address) & FLAG_ALLOCATED) > 0; }
 };
 
+template<typename OBJECT, size_t NODE_INIT_CAP, size_t NODE_MAX_CAP>
+class SharedPool
+{
+public:
+    typedef PoolTraitsDefault<OBJECT> POOL_TRAITS;
+    typedef Pool<POOL_TRAITS> POOL;
+    static POOL& get()
+    {
+        static POOL _pool (AllocatorI::getDefault(), NODE_INIT_CAP, NODE_MAX_CAP);
+
+        return _pool;
+    }
+};
+
 } // namespace mix
+
+#define MIX_DECALRE_POOLTYPE(POOL, OBJECT_TYPE) typedef Pool< PoolTraitsDefault<OBJECT_TYPE> > POOL
 
 MIX_CLASS_IS_ALLOCATOR_OWNER (mix::PoolNode);
 

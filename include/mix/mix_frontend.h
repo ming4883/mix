@@ -2,6 +2,7 @@
 #define MIX_FRONTEND_H
 
 #include <mix/mix_event.h>
+#include <mix/mix_pool.h>
 #include <bx/float4_t.h>
 
 namespace mix
@@ -125,7 +126,6 @@ public:
 
     //! Create a FrontendEvent with type = FrontendEventType::SwipDown
     static FrontendEvent* swipeDown (float _x, float _y, float _z, float _w);
-
 };
 
 	

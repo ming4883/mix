@@ -40,23 +40,31 @@ TEST_F (TestsOfPool, Pool_Basic)
 {
     mix::AllocatorCrt<16> _alloc;
 
-    ObjectPool* _pool = mix_new<ObjectPool> (_alloc, 32u, 512u);
+    ObjectPool* _pool = mix_new<ObjectPool> (_alloc, 2u, 2u);
 
-    // create the 1st object
+    // create the 1st and 2nd object
     Object* _obj1 = _pool->newObject ("123");
-
-    EXPECT_EQ ("123", _obj1->data);
-
-    EXPECT_TRUE (_pool->delObject (_obj1)); // destroy
-
-    //create the 2nd object, it should be reusing the memory allocated for obj1
     Object* _obj2 = _pool->newObject ("234");
 
+    // verify contents
+    EXPECT_EQ ("123", _obj1->data);
     EXPECT_EQ ("234", _obj2->data);
 
-    EXPECT_EQ (_obj1, _obj2);
-
+    EXPECT_TRUE (_pool->delObject (_obj1)); // destroy
     EXPECT_TRUE (_pool->delObject (_obj2));
+
+    //create the 3nd and 4th object, they should be reusing the memory allocated for obj1 and obj2
+    Object* _obj3 = _pool->newObject ("345");
+    Object* _obj4 = _pool->newObject ("456");
+    
+    EXPECT_EQ (_obj1, _obj4);
+    EXPECT_EQ (_obj2, _obj3);
+
+    EXPECT_EQ ("345", _obj3->data);
+    EXPECT_EQ ("456", _obj4->data);
+
+    EXPECT_TRUE (_pool->delObject (_obj3));
+    EXPECT_TRUE (_pool->delObject (_obj4));
 
     mix_del (_alloc, _pool);
 }
@@ -106,6 +114,43 @@ TEST_F (TestsOfPool, Pool_Foreach)
     });
 
     EXPECT_EQ (128, _counter);
+
+    // clean up
+    mix_del (_alloc, _pool);
+}
+
+TEST_F (TestsOfPool, Pool_DeleteAllObjects)
+{
+    mix::AllocatorCrt<16> _alloc;
+    mix::StringFormatter _sfmt;
+
+    ObjectPool* _pool = mix_new<ObjectPool> (_alloc, 2u, 128u);
+    const int N = 64;
+
+    Object* _allocated[N];
+
+    for (int i = 0; i < N; ++i)
+        _allocated[i] = _pool->newObject (_sfmt.format("%d", i));
+
+    // delete the first, the middle, and the last object manually
+    _pool->delObject(_allocated[0]);
+    _pool->delObject(_allocated[N-1]);
+    _pool->delObject(_allocated[N/2]);
+    EXPECT_EQ (N-3, _pool->delAllObjects());
+
+    for (int i = 0; i < N; ++i)
+         _allocated[i] = _pool->newObject (_sfmt.format("%d", i));
+
+    // verify allocation has the same order as foreach
+    int _counter = 0;
+
+    _pool->foreach ([&_counter, &_allocated](Object* _obj){
+        EXPECT_EQ (_allocated[_counter], _obj);
+        _counter++;
+        return true;
+    });
+
+    EXPECT_EQ(N, _counter);
 
     // clean up
     mix_del (_alloc, _pool);
