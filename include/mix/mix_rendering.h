@@ -5,6 +5,9 @@
 #include <mix/mix_pool.h>
 
 #include <bgfx/bgfx.h>
+#include <bx/float4_t.h>
+#include <bx/float4x4_t.h>
+
 
 namespace mix
 {
@@ -88,6 +91,56 @@ public:
     void reset();
 
     RenderBucket* addBucket();
+};
+
+class SceneComponent
+{
+public:
+    virtual ~SceneComponent() {}
+
+};
+
+class Camera : public SceneComponent
+{
+public:
+    bool orthor;
+    float aspect;
+    float fovy;
+    float clipNear;
+    float clipFar;
+
+    float viewport[4]; // left, top, width, height in [0 - 1] range
+};
+
+class Transform : public SceneComponent
+{
+public:
+    bx::float4_t position; //!< vec3
+    bx::float4_t orientation; //!< quaternion
+    bx::float4_t scale; //!< vec3
+};
+
+class Renderer
+{
+public:
+    Renderer(AllocatorI& _allocator);
+
+    void resetRenderQueues();
+
+    RenderQueue** getRenderQueues();
+
+    bool frameBegin();
+
+    bool viewBegin(Camera* camera);
+
+    void render();
+
+    void viewEnd(Camera* camera);
+
+    void frameEnd();
+
+private:
+    RenderQueue** m_renderQueues;
 };
 
 } // namespace mix

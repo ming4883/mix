@@ -5,6 +5,8 @@
 #include <mix/mix_string.h>
 #include <mix/mix_bitset.h>
 
+#include <bx/fpumath.h>
+
 namespace mix
 {
     
