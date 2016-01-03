@@ -112,14 +112,6 @@ public:
     float viewport[4]; // left, top, width, height in [0 - 1] range
 };
 
-class Transform : public SceneComponent
-{
-public:
-    bx::float4_t position; //!< vec3
-    bx::float4_t orientation; //!< quaternion
-    bx::float4_t scale; //!< vec3
-};
-
 class Renderer
 {
 public:
