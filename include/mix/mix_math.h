@@ -134,6 +134,13 @@ public:
     Transform inverse (void) const;
     Transform derive (Transform _parent) const;
     Mat44 toMat44 (void) const;
+
+    void setRotations (const float* _r3);
+    void getRotations (float* _r3) const;
+
+    void getUpDir (float* _v3) const;
+    void getRightDir (float* _v3) const;
+    void getForwardDir (float* _v3) const;
 };
 
 

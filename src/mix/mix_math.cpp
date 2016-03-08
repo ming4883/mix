@@ -114,4 +114,43 @@ Mat44 Transform::toMat44 (void) const
     return _ret;
 }
 
+void Transform::setRotations (const float* _r3)
+{
 }
+
+void Transform::getRotations (float* _r3) const
+{
+}
+
+void Transform::getUpDir (float* _v3) const
+{
+    _v3[0] = 0.0f;
+    _v3[1] = 1.0f;
+    _v3[2] = 0.0f;
+
+    transformDirection (_v3);
+}
+
+void Transform::getRightDir (float* _v3) const
+{
+    _v3[0] = 1.0f;
+    _v3[1] = 0.0f;
+    _v3[2] = 0.0f;
+
+    transformDirection (_v3);
+}
+
+void Transform::getForwardDir (float* _v3) const
+{
+    _v3[0] = 0.0f;
+    _v3[1] = 0.0f;
+    _v3[2] = 1.0f;
+
+    transformDirection (_v3);
+}
+
+}
+
+#if defined (MIX_TESTS)
+#   include "mix_math.tests.inl"
+#endif

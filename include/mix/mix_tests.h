@@ -3,7 +3,6 @@
 
 #include <gtest/gtest.h>
 
-#include <gtest/gtest.h>
 #include <sstream>
 
 #include <bx/thread.h>
@@ -183,5 +182,19 @@ private:
 };
 
 } // namespace mix
+
+template<typename T, size_t SIZE>
+::testing::AssertionResult ArraysMatch(const T (&expected)[SIZE], const T (&actual)[SIZE])
+{
+	for (size_t i(0); i < SIZE; ++i){
+		if (expected[i] != actual[i]){
+			return ::testing::AssertionFailure() << "array[" << i
+				<< "] (" << actual[i] << ") != expected[" << i
+				<< "] (" << expected[i] << ")";
+		}
+	}
+
+	return ::testing::AssertionSuccess();
+}
 
 #endif // MIX_TESTS_H
